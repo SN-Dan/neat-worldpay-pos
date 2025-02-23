@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
-    'name': 'Neat Worldpay POS',
+    'name': 'NEAT Worldpay Integration for Odoo',
     'version': '1.0',
     'category': 'Point of Sale',
     'sequence': 6,
-    'summary': 'Integrate your POS with a Worldpay payment provider',
+    'summary': 'Integrate your POS with a Worldpay payment terminal',
     'description': 'Pay using Odoo and Worldpay - Any Place, Any Time',
     'author': 'Neat Apps',
     'maintainer': 'Neat Apps',
@@ -13,7 +14,7 @@
         'views/pos_payment_method_views.xml',
     ],
     'external_dependencies': {
-        'python': ['cryptography', 'stomp']
+        'python': ['cryptography']
     },
     'depends': ['point_of_sale'],
     'qweb': [],

@@ -5,20 +5,20 @@ from cryptography.fernet import Fernet
 _logger = logging.getLogger(__name__)
 
 class PosPaymentMethod(models.Model):
-    _name = 'neat.worldplay.security'
-    _description = 'Neat Worldplay Security'
+    _name = 'neat.worldpay.security'
+    _description = 'NEAT Worldpay Security'
 
-    neat_worldplay_secret_key = fields.Char('Secret Key')
+    neat_worldpay_secret_key = fields.Char('Secret Key')
 
     def create(self, values):
         fernet_key = Fernet.generate_key()
         fernet_key_string = fernet_key.decode()
-        values['neat_worldplay_secret_key'] = fernet_key_string
+        values['neat_worldpay_secret_key'] = fernet_key_string
         return super(PosPaymentMethod, self).create(values)
 
 
     def write(self, values):
-        if 'neat_worldplay_secret_key' in values:
-            del values['neat_worldplay_secret_key']
+        if 'neat_worldpay_secret_key' in values:
+            del values['neat_worldpay_secret_key']
         return super(PosPaymentMethod, self).write(values)
 

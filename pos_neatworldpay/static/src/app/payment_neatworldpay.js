@@ -13,11 +13,11 @@ export class PaymentNeatWorldpay extends PaymentInterface {
     addCss() {
         const customModalStyles = `
             /* Modal styles */
-            .neat-worldplay-modal-text {
+            .neat-worldpay-modal-text {
                 width: 380px;
                 text-align: center;
             }
-            .neat-worldplay-modal {
+            .neat-worldpay-modal {
                 display: inline-block;
                 position: fixed;
                 z-index: 1000;
@@ -28,7 +28,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
                 background-color: rgba(0, 0, 0, 0.5);
             }
 
-            .neat-worldplay-modal-content {
+            .neat-worldpay-modal-content {
                 background-color: #fff;
                 border-radius: 5px;
                 position: absolute;
@@ -40,7 +40,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
             }
 
             /* Button styles */
-            .neat-worldplay-modal-button {
+            .neat-worldpay-modal-button {
                 width: calc(100% - 20px);
                 height: 55px;
                 margin: 5px;
@@ -51,10 +51,10 @@ export class PaymentNeatWorldpay extends PaymentInterface {
                 color: white;
             }
             /* Modal styles */
-            .neat-worldplay-promo-modal-text {
+            .neat-worldpay-promo-modal-text {
                 text-align: center;
             }
-            .neat-worldplay-promo-modal {
+            .neat-worldpay-promo-modal {
                 display: inline-block;
                 position: fixed;
                 z-index: 1000;
@@ -65,7 +65,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
                 background-color: rgba(0, 0, 0, 0.5);
             }
 
-            .neat-worldplay-promo-modal-content {
+            .neat-worldpay-promo-modal-content {
                 background-color: #fff;
                 border-radius: 5px;
                 position: absolute;
@@ -76,7 +76,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
             }
 
             /* Button styles */
-            .neat-worldplay-promo-modal-button {
+            .neat-worldpay-promo-modal-button {
                 padding: 10px 20px;
                 margin: 5px;
                 cursor: pointer;
@@ -91,13 +91,13 @@ export class PaymentNeatWorldpay extends PaymentInterface {
     }
     displayMessage(self, header, message, btnText = "Ok", btnId = "btnOk") {
             const modal = document.createElement('div');
-            modal.classList.add('neat-worldplay-modal');
+            modal.classList.add('neat-worldpay-modal');
             modal.innerHTML = `
-                <div class="neat-worldplay-modal-content">
-                    <h2 class="neat-worldplay-modal-text">${header}</h2>
+                <div class="neat-worldpay-modal-content">
+                    <h2 class="neat-worldpay-modal-text">${header}</h2>
                     <p>${message}</p>
                     <div>
-                        <button class="neat-worldplay-modal-button" id="${btnId}">${btnText}</button>
+                        <button class="neat-worldpay-modal-button" id="${btnId}">${btnText}</button>
                     </div>
                 </div>
             `;
@@ -114,21 +114,21 @@ export class PaymentNeatWorldpay extends PaymentInterface {
             var currentURL = window.location.href;
             var encodedURL = encodeURIComponent(currentURL);
             const modal = document.createElement('div');
-            modal.classList.add('neat-worldplay-modal');
+            modal.classList.add('neat-worldpay-modal');
             modal.innerHTML = `
-                <div class="neat-worldplay-modal-content">
-                    <h2 class="neat-worldplay-modal-text">Select a Payment Type</h2>
+                <div class="neat-worldpay-modal-content">
+                    <h2 class="neat-worldpay-modal-text">Select a Payment Type</h2>
                     <div>
-                        <button class="neat-worldplay-modal-button" id="btnCard">Card</button>
+                        <button class="neat-worldpay-modal-button" id="btnCard">Card</button>
                     </div>
                     <div>
-                        <button class="neat-worldplay-modal-button" id="btnPayPal">PayPal</button>
+                        <button class="neat-worldpay-modal-button" id="btnPayPal">PayPal</button>
                     </div>
                     <div>
-                        <button class="neat-worldplay-modal-button" id="btnVenmo">Venmo</button>
+                        <button class="neat-worldpay-modal-button" id="btnVenmo">Venmo</button>
                     </div>
                     <div>
-                        <button class="neat-worldplay-modal-button" id="btnCancel">Cancel</button>
+                        <button class="neat-worldpay-modal-button" id="btnCancel">Cancel</button>
                     </div>
                 </div>
             `;
@@ -144,15 +144,14 @@ export class PaymentNeatWorldpay extends PaymentInterface {
             // Event listeners for button clicks
             document.getElementById("btnCard").addEventListener("click", function() {
                 if(deviceType === "android") {
-                    if(window.isSNZettleAndroidApp) {
+                    if(window.isNeatPOSAndroidApp) {
                         AndroidInterface.onPayment("btnCard")
                     }
                     else {
-                        window.open("app://sn-zettle-payment-android?paymentType=0&redirectUrl=" + encodedURL);
+                        window.open("app://neat-worldpay-payment-android?paymentType=0&redirectUrl=" + encodedURL);
                     }
                 }
                 else {
-                    //window.open("snzettle://payment?paymentType=card", '_blank');
                     window.webkit.messageHandlers.btnCard.postMessage(null);
                 }
                 closeModal();
@@ -160,15 +159,14 @@ export class PaymentNeatWorldpay extends PaymentInterface {
 
             document.getElementById("btnPayPal").addEventListener("click", function() {
                 if(deviceType === "android") {
-                    if(window.isSNZettleAndroidApp) {
+                    if(window.isNeatPOSAndroidApp) {
                         AndroidInterface.onPayment("btnPayPal")
                     }
                     else {
-                        window.open("app://sn-zettle-payment-android?paymentType=2&redirectUrl=" + encodedURL);
+                        window.open("app://neat-worldpay-payment-android?paymentType=2&redirectUrl=" + encodedURL);
                     }
                 }
                 else {
-                    //window.open("snzettle://payment?paymentType=paypal", '_blank');
                     window.webkit.messageHandlers.btnPayPal.postMessage(null);
                 }
                 closeModal();
@@ -176,15 +174,14 @@ export class PaymentNeatWorldpay extends PaymentInterface {
 
             document.getElementById("btnVenmo").addEventListener("click", function() {
                 if(deviceType === "android") {
-                    if(window.isSNZettleAndroidApp) {
+                    if(window.isNeatPOSAndroidApp) {
                         AndroidInterface.onPayment("btnVenmo")
                     }
                     else {
-                        window.open("app://sn-zettle-payment-android?paymentType=1&redirectUrl=" + encodedURL);
+                        window.open("app://neat-worldpay-payment-android?paymentType=1&redirectUrl=" + encodedURL);
                     }
                 }
                 else {
-                    //window.open("snzettle://payment?paymentType=venmo", '_blank');
                     window.webkit.messageHandlers.btnVenmo.postMessage(null);
                 }
                 closeModal();
@@ -199,6 +196,9 @@ export class PaymentNeatWorldpay extends PaymentInterface {
     */
     setup() {
         super.setup(...arguments);
+        if(!window.hasRenderedPromotion) {
+            window.hasRenderedPromotion = false
+        }
         this.addCss()
     }
     /**
@@ -210,7 +210,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
             const line = this.pos.get_order().selected_paymentline;
             const order = this.pos.get_order();
             const data = this._terminal_pay_data();
-            const terminalId = data.PaymentMethod.neat_worldplay_terminal_device_code
+            const terminalId = data.PaymentMethod.neat_worldpay_terminal_device_code
             const refunded_order_line_ids = []
 
             for(let i = 0; i < order.orderlines.length; i++) {
@@ -222,7 +222,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
 
             if(refunded_order_line_ids.length > 1) {
                 try {
-                    const iosr = await this.env.services.rpc('/neat_worldplay/is_order_the_same', {
+                    const iosr = await this.env.services.rpc('/pos_worldpay/is_order_the_same', {
                             refunded_order_line_ids
                     })
 
@@ -251,22 +251,34 @@ export class PaymentNeatWorldpay extends PaymentInterface {
                 user_id: order.cashier.id,
                 refunded_order_line_id,
             }
-            const result = await this.env.services.rpc('/neat_worldplay/create_payment_request', params)
+            const result = await this.env.services.rpc('/pos_worldpay/create_payment_request', params)
             if(!result || result.status === 403 || result.status === 400) {
                 line.set_payment_status('retry');
                 return false
             }
+            const device = window.navigator.userAgent
+            const isMobile = device.includes("Android") || window.isNeatPOSiOSApp
+            if(result && result.status === 201 && data.PaymentMethod.neat_worldpay_is_mobile && isMobile) {
+              if(data.PaymentMethod.neat_worldpay_device_type === 'android') {
+                this.displayModal(this, data.PaymentMethod.neat_worldpay_device_type)
+              }
+              else {
+                if(window.isNeatPOSiOSApp) {
+                    this.displayModal(this, data.PaymentMethod.neat_worldpay_device_type)
+                }
+              }
+            }
             line.set_payment_status('waitingCard');
             while(true) {
                 try {
-                    const res = await this.env.services.rpc('/neat_worldplay/check_request', {
+                    const res = await this.env.services.rpc('/pos_worldpay/check_request', {
                         terminal_id: terminalId,
                         transaction_id: result.data.transaction_id,
                     })
 
                     if(res && res.status === 200) {
                         if(res.data.status === 'done' || res.data.status === 'refunded' || res.data.status === 'resent_done' || res.data.status === 'resent_refunded') {
-                            const processed_result = await this.env.services.rpc('/neat_worldplay/request_processed', {
+                            const processed_result = await this.env.services.rpc('/pos_worldpay/request_processed', {
                                 terminal_id: terminalId,
                                 transaction_id: res.data.transaction_id,
                             })
@@ -320,8 +332,8 @@ export class PaymentNeatWorldpay extends PaymentInterface {
             console.log('cancel')
             const line = this.pos.get_order().selected_paymentline;
             const data = this._terminal_pay_data();
-            const terminalId = data.PaymentMethod.neat_worldplay_terminal_device_code
-            const res = await this.env.services.rpc('/neat_worldplay/cancel_payment_request', {
+            const terminalId = data.PaymentMethod.neat_worldpay_terminal_device_code
+            const res = await this.env.services.rpc('/pos_worldpay/cancel_payment_request', {
                 terminal_id: terminalId,
                 order_id: data.OrderID,
             })
