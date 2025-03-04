@@ -1,10 +1,7 @@
 /** @odoo-module */
 
 import { _t } from "@web/core/l10n/translation";
-import { useService } from "@web/core/utils/hooks";
 import { PaymentInterface } from "@point_of_sale/app/payment/payment_interface";
-import { ErrorPopup } from "@point_of_sale/app/errors/popups/error_popup";
-import { escape } from "@web/core/utils/strings";
 
 export class PaymentNeatWorldpay extends PaymentInterface {
     sleep(ms) {
