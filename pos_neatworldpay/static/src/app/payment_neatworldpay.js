@@ -205,6 +205,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
      * @override
     */
     async send_payment_request (cid) {
+        debugger
         try {
             super.send_payment_request(...arguments);
             const line = this.pos.get_order().selected_paymentline;
