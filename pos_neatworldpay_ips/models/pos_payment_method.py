@@ -33,12 +33,12 @@ class PosPaymentMethod(models.Model):
     @api.model
     def create(self, values):
         if values['use_payment_terminal'] == 'neatworldplay':
-            values['sn_zettle_terminal_device_code'] = self.generate_unique_datetime_id()
+            values['neat_worldpay_terminal_device_code'] = self.generate_unique_datetime_id()
         return super(PosPaymentMethod, self).create(values)
 
     def write(self, values):
-        if 'sn_zettle_terminal_device_code' in values:
-            del values['sn_zettle_terminal_device_code']
+        if 'neat_worldpay_terminal_device_code' in values:
+            del values['neat_worldpay_terminal_device_code']
 
         return super(PosPaymentMethod, self).write(values)
     def generate_unique_datetime_id(self):
@@ -54,7 +54,7 @@ class PosPaymentMethod(models.Model):
             formatted_id = '-'.join([transformed_id[i:i+3] for i in range(0, len(transformed_id), 3)])
 
             # Check if the generated ID already exists in the database
-            existing_record = self.search([('sn_zettle_terminal_device_code', '=', formatted_id)])
+            existing_record = self.search([('neat_worldpay_terminal_device_code', '=', formatted_id)])
 
             # If no matching record found, return the unique ID
             if not existing_record:

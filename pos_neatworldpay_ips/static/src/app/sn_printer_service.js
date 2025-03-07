@@ -40,13 +40,13 @@ export class SNPrinterService extends PrinterService {
         }
     }
     async printHtml(el) {
-        if(window.isSNZettleiOSApp && window.useBluetoothPrinter) {
+        if(window.isNeatPOSAndroidApp && window.useBluetoothPrinter) {
             const image = this.processCanvas(
                 await htmlToCanvas(el, { addClass: "pos-receipt-print" })
             );
             window.webkit.messageHandlers.bluetoothPrintReceipt.postMessage(image);
         }
-        else if(window.isSNZettleAndroidApp && window.useBluetoothPrinter) {
+        else if(window.isNeatPOSAndroidApp && window.useBluetoothPrinter) {
             const image = this.processCanvas(
                 await htmlToCanvas(el, { addClass: "pos-receipt-print" })
             );

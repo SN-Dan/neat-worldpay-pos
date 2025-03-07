@@ -144,15 +144,14 @@ export class PaymentNeatWorldpay extends PaymentInterface {
             // Event listeners for button clicks
             document.getElementById("btnCard").addEventListener("click", function() {
                 if(deviceType === "android") {
-                    if(window.isSNZettleAndroidApp) {
+                    if(window.isNeatPOSAndroidApp) {
                         AndroidInterface.onPayment("btnCard")
                     }
                     else {
-                        window.open("app://sn-zettle-payment-android?paymentType=0&redirectUrl=" + encodedURL);
+                        window.open("app://neat-worldpay-payment-android?paymentType=0&redirectUrl=" + encodedURL);
                     }
                 }
                 else {
-                    //window.open("snzettle://payment?paymentType=card", '_blank');
                     window.webkit.messageHandlers.btnCard.postMessage(null);
                 }
                 closeModal();
@@ -160,15 +159,14 @@ export class PaymentNeatWorldpay extends PaymentInterface {
 
             document.getElementById("btnPayPal").addEventListener("click", function() {
                 if(deviceType === "android") {
-                    if(window.isSNZettleAndroidApp) {
+                    if(window.isNeatPOSAndroidApp) {
                         AndroidInterface.onPayment("btnPayPal")
                     }
                     else {
-                        window.open("app://sn-zettle-payment-android?paymentType=2&redirectUrl=" + encodedURL);
+                        window.open("app://neat-worldpay-payment-android?paymentType=2&redirectUrl=" + encodedURL);
                     }
                 }
                 else {
-                    //window.open("snzettle://payment?paymentType=paypal", '_blank');
                     window.webkit.messageHandlers.btnPayPal.postMessage(null);
                 }
                 closeModal();
@@ -176,15 +174,14 @@ export class PaymentNeatWorldpay extends PaymentInterface {
 
             document.getElementById("btnVenmo").addEventListener("click", function() {
                 if(deviceType === "android") {
-                    if(window.isSNZettleAndroidApp) {
+                    if(window.isNeatPOSAndroidApp) {
                         AndroidInterface.onPayment("btnVenmo")
                     }
                     else {
-                        window.open("app://sn-zettle-payment-android?paymentType=1&redirectUrl=" + encodedURL);
+                        window.open("app://neat-worldpay-payment-android?paymentType=1&redirectUrl=" + encodedURL);
                     }
                 }
                 else {
-                    //window.open("snzettle://payment?paymentType=venmo", '_blank');
                     window.webkit.messageHandlers.btnVenmo.postMessage(null);
                 }
                 closeModal();
