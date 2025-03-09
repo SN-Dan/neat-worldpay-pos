@@ -11,7 +11,7 @@
                 <field name="neat_worldpay_terminal_master_pwd_mock" password="True"
                        attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')]}">
                 </field>
-                <field name="neat_worldpay_terminal_manager_group_selection" attrs="{'invisible': [('use_payment_terminal', '!=', 'snzettle')],
+                <field name="neat_worldpay_terminal_manager_group_selection" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')],
                                 'required': [('use_payment_terminal', '=', 'neatworldpay')]}"/>
                 <field name="neat_worldpay_device_type" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')],
                                 'required': [('use_payment_terminal', '=', 'neatworldpay')]}"/>
