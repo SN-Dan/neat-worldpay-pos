@@ -5,16 +5,17 @@
         <field name="inherit_id" ref="point_of_sale.pos_payment_method_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='use_payment_terminal']" position="after">
-                <field name="neat_worldpay_terminal_device_code" invisible="use_payment_terminal != 'neatworldpay'"
-                                readonly="use_payment_terminal == 'neatworldpay'"/>
+                <field name="neat_worldpay_terminal_device_code"
+                       attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')],
+                                'readonly': [('use_payment_terminal', '=', 'neatworldpay')]}"/>
                 <field name="neat_worldpay_terminal_master_pwd_mock" password="True"
-                       invisible="use_payment_terminal != 'neatworldpay'">
+                       attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')]}">
                 </field>
-                <field name="neat_worldpay_terminal_manager_group_selection" invisible="use_payment_terminal != 'neatworldpay'"
-                                required="use_payment_terminal == 'neatworldpay'"/>
-                <field name="neat_worldpay_device_type" invisible="use_payment_terminal != 'neatworldpay'"
-                                required="use_payment_terminal == 'neatworldpay'"/>
-                <field name="neat_worldpay_is_mobile" invisible="use_payment_terminal != 'neatworldpay'"/>
+                <field name="neat_worldpay_terminal_manager_group_selection" attrs="{'invisible': [('use_payment_terminal', '!=', 'snzettle')],
+                                'required': [('use_payment_terminal', '=', 'neatworldpay')]}"/>
+                <field name="neat_worldpay_device_type" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')],
+                                'required': [('use_payment_terminal', '=', 'neatworldpay')]}"/>
+                <field name="neat_worldpay_is_mobile" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')]}"/>
             </xpath>
         </field>
     </record>
