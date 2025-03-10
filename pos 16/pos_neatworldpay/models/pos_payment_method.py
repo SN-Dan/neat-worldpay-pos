@@ -29,7 +29,7 @@ class PosPaymentMethod(models.Model):
     neat_worldpay_terminal_pass_uuid = fields.Char('Terminal Pass UUID')
 
     neat_worldpay_device_type = fields.Selection(
-        [('android', 'Android'), ('ios', 'iOS')],
+        [('android', 'Android')],
         string='Device Type',
         help='Indicates what operating system the terminal will use. Example: If the Neat POS Suite App is installed on an Android then Android should be selected here.'
     )
