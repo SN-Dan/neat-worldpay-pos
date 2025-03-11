@@ -17,9 +17,6 @@ odoo.define('pos_neatworldpay.SNReceiptScreen', function(require) {
         async _printWeb() {
             if (window.isNeatPOSAndroidApp && window.useBluetoothPrinter) {
                 const image = await this.getReceiptImage()
-                window.webkit.messageHandlers.bluetoothPrintReceipt.postMessage(image);
-            } else if (window.isNeatPOSAndroidApp && window.useBluetoothPrinter) {
-                const image = await this.getReceiptImage()
                 AndroidInterface.onBluetoothPrintReceipt(image);
             } else {
                 await super._printWeb();
