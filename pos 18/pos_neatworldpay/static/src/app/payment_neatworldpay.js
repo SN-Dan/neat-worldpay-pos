@@ -39,7 +39,6 @@ export class PaymentNeatWorldpay extends PaymentInterface {
     */
     async send_payment_request (cid) {
         try {
-            debugger
             super.send_payment_request(...arguments);
             const line = this._get_payment_line();
             const order = this.pos.get_order();
@@ -50,7 +49,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
             for(let i = 0; i < order.lines.length; i++) {
                 var orderline = order.lines[i]
                 if(orderline.refunded_orderline_id) {
-                    refunded_order_line_ids.push(orderline.refunded_orderline_id)
+                    refunded_order_line_ids.push(orderline.refunded_orderline_id.id)
                 }
             }
 

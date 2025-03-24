@@ -38,12 +38,15 @@ export class SNPrinterService extends PrinterService {
                 await htmlToCanvas(el, { addClass: "pos-receipt-print" })
             );
             window.webkit.messageHandlers.bluetoothPrintReceipt.postMessage(image);
+            return true
         }
         else if(window.isNeatPOSAndroidApp && window.useBluetoothPrinter) {
             const image = this.processCanvas(
                 await htmlToCanvas(el, { addClass: "pos-receipt-print" })
             );
+            
             AndroidInterface.onBluetoothPrintReceipt(image)
+            return true
         }
         else {
             this.setPrinter(this.hardware_proxy.printer);
