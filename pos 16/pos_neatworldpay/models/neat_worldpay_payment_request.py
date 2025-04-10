@@ -22,5 +22,6 @@ class NeatWorldpayPaymentRequest(models.Model):
     card_type = fields.Text('Card Type', required=False, readonly=False, store=True)
     cardholder_name = fields.Text('Cardholder Name', required=False, readonly=False, store=True)
     uti = fields.Text('UTI', required=False, readonly=False, store=False)
+    rrn = fields.Text('RRN', required=False, readonly=False, store=False)
 
 

@@ -35,7 +35,7 @@ class PosWorldpayController(http.Controller):
             order_id = order_id[space_index + 1:]
         paid_payments_ref = http.request.env['neat.worldpay.payment.request'].sudo().search(
             [('status', 'like', 'processed_%'), ('order_id', '=', order_id), ('amount', '>=', 0)])
-        paid_payments = paid_payments_ref.read(['amount', 'refunded_amt', 'uncommited_refunded_amt', 'transaction_id', 'card_type', 'uti'])
+        paid_payments = paid_payments_ref.read(['amount', 'refunded_amt', 'uncommited_refunded_amt', 'transaction_id', 'card_type', 'uti', 'rrn'])
         refunds = []
         covered_sum = 0
         _logger.info("get_refunds payments: %s", paid_payments)
@@ -43,7 +43,7 @@ class PosWorldpayController(http.Controller):
             remainder = abs(abs(amt) - covered_sum)
             left_for_refund_amount = abs(payment['amount'] - payment['refunded_amt'])
             if left_for_refund_amount > 0:
-                refund = {'transaction_id': payment['transaction_id'], 'card_type': payment['card_type'], 'uti': payment['uti']}
+                refund = {'transaction_id': payment['transaction_id'], 'card_type': payment['card_type'], 'uti': payment['uti'], 'rrn': payment['rrn']}
                 refunds.append(refund)
                 if remainder >= left_for_refund_amount:
                     refund['amount'] = left_for_refund_amount
@@ -343,6 +343,7 @@ class PosWorldpayController(http.Controller):
         status = r['status']
         refunds = r.get('refunds', None)
         uti = r.get('uti', None)
+        rrn = r.get('rrn', None)
 
         if status != 'done' and status != 'failed' and status != 'cancelled' and status != 'refunded' and status != 'resent_done' and status != 'resent_refunded':
             return json.dumps({ 'status': 400 })
@@ -392,7 +393,8 @@ class PosWorldpayController(http.Controller):
                 'status': status,
                 'refunded_amt': total_refunded_amount,
                 'start_date': datetime.utcnow(),
-                'uti': uti
+                'uti': uti,
+                'rrn': rrn
             }
         else:
             pr = {
