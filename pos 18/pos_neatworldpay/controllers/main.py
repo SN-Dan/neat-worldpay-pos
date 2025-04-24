@@ -309,6 +309,11 @@ class PosWorldpayController(http.Controller):
 
     @http.route('/pos_worldpay/get_license_key',type='http', auth='public', methods=['POST'], csrf=False, cors='*')
     def get_license_key(self):
+        r = json.loads(http.request.httprequest.data)
+        refresh_token = r['refresh_token']
+        res = self.auth_refresh_token(refresh_token)
+        if not res['authenticated']:
+            return json.dumps({'status': 401})
         user_settings = http.request.env['neat.worldpay.settings'].sudo().search([]).read(['license_key'])
         license_key = None
         if len(user_settings):
