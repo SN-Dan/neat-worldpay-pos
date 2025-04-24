@@ -8,4 +8,4 @@ class NeatWorldpaySettings(models.Model):
     _description = 'NEAT Worldpay User Settings'
 
     promotion_displayed = fields.Boolean('Promotion Displayed')
-
+    license_key = fields.Text('License Key', required=False, readonly=False, store=True)

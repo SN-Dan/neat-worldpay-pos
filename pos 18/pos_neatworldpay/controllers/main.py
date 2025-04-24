@@ -254,20 +254,6 @@ class PosWorldpayController(http.Controller):
             cpr.write({'status': 'cancelled'})
         return { 'status': 200 }
 
-    @http.route('/pos_worldpay/promotion_displayed', type='json', auth='user', methods=['POST'])
-    def promotion_displayed(self):
-        user_settings = http.request.env['neat.worldpay.settings'].sudo().search([])
-        if len(user_settings) > 0:
-            user_settings.write({ 'promotion_displayed': True })
-        else:
-            request.env['neat.worldpay.settings'].sudo().create({ 'promotion_displayed': True })
-        return { 'status': 200 }
-
-    @http.route('/pos_worldpay/has_promotion_displayed', type='json', auth='user', methods=['POST'])
-    def has_promotion_displayed(self):
-        user_settings = http.request.env['neat.worldpay.settings'].sudo().search([('promotion_displayed', '=', True)])
-        return {'status': 200, 'data': { 'promotion_displayed': len(user_settings) > 0 }}
-
     @http.route('/pos_worldpay/check_request', type='json', auth='user', methods=['POST'])
     def check_request(self, terminal_id, transaction_id):
         current_datetime = datetime.utcnow()
@@ -305,6 +291,30 @@ class PosWorldpayController(http.Controller):
             self.commit_refunds(cpr['refunded_order_line_id'])
         cpr.write({ 'status': 'processed_' + cpr['status'] })
         return { 'status': 200 }
+
+    @http.route('/pos_worldpay/set_license_key',type='http', auth='public', methods=['POST'], csrf=False, cors='*')
+    def set_license_key(self):
+        r = json.loads(http.request.httprequest.data)
+        refresh_token = r['refresh_token']
+        res = self.auth_refresh_token(refresh_token)
+        if not res['authenticated']:
+            return json.dumps({'status': 401})
+
+        user_settings = http.request.env['neat.worldpay.settings'].sudo().search([])
+        if len(user_settings) > 0:
+            user_settings.write({ 'promotion_displayed': True, 'license_key': r['license_key'] })
+        else:
+            request.env['neat.worldpay.settings'].sudo().create({ 'promotion_displayed': True, 'license_key': r['license_key'] })
+        return json.dumps({ 'status': 200 })
+
+    @http.route('/pos_worldpay/get_license_key',type='http', auth='public', methods=['POST'], csrf=False, cors='*')
+    def get_license_key(self):
+        user_settings = http.request.env['neat.worldpay.settings'].sudo().search([]).read(['license_key'])
+        license_key = None
+        if len(user_settings):
+            license_key = user_settings[0]['license_key']
+        return json.dumps({'status': 200, 'data': { 'license_key': license_key }})
+
     @http.route('/pos_worldpay/poll_payment_request',type='http', auth='public', methods=['POST'], csrf=False, cors='*')
     def poll_payment_request(self):
         r = json.loads(http.request.httprequest.data)
@@ -538,7 +548,12 @@ class PosWorldpayController(http.Controller):
             if read_request['amount'] != amt:
                 return json.dumps({ 'status': 403 })
             dbname = http.request.httprequest.environ.get('HTTP_DBNAME')
-            user_id = http.request.env['res.users'].sudo().authenticate(dbname, username, password, http.request.env.context)
+            user_id = http.request.env['res.users'].sudo().with_context(http.request.env.context).authenticate(dbname, {'login': username, 'password': password, 'type': 'password'}, { 'interactive': False })
+            _logger.info('user_id from override: %s', user_id)
+            if user_id:
+                user_id = user_id['uid']
+            else:
+                return json.dumps({'status': 403})
             user = http.request.env['res.users'].sudo().browse(user_id)
             if user:
                 payment_methods = http.request.env['pos.payment.method'].sudo().search(
@@ -565,11 +580,11 @@ class PosWorldpayController(http.Controller):
         if not res['authenticated']:
             return json.dumps({ 'status': 401 })
         pos_payment_method = http.request.env['pos.payment.method'].sudo().search(
-            [('neat_worldpay_terminal_device_code', '=', res['device_code'])]).read(['name'])
+            [('neat_worldpay_terminal_device_code', '=', res['device_code'])])
         if len(pos_payment_method) == 0:
             return json.dumps({ 'status': 404 })
 
-        return json.dumps({ 'status': 200, 'data': { 'name': pos_payment_method[0]['name'] } })
+        return json.dumps({ 'status': 200, 'data': { 'name': pos_payment_method[0].name, 'url': pos_payment_method[0].company_id.website } })
 
 
 
