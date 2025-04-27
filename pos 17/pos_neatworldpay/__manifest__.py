@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
-    'name': 'NEAT Worldpay Integration for Odoo',
+    'name': 'POS Worldpay',
     'version': '1.0',
     'category': 'Point of Sale',
     'sequence': 6,
