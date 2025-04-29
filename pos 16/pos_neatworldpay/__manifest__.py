@@ -23,7 +23,8 @@
         'point_of_sale.assets': [
             'pos_neatworldpay/static/src/js/models.js',
             'pos_neatworldpay/static/src/js/payment_neatworldpay.js',
-            'pos_neatworldpay/static/src/js/sn_printer_service.js'
+            'pos_neatworldpay/static/src/js/sn_printer_service.js',
+            'pos_neatworldpay/static/src/js/sn_reprinter_service.js'
         ],
     },
     'installable': True,
