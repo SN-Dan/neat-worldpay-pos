@@ -1,2 +1,6 @@
 # neat-worldpay-pos
-test
+
+
+pos_desktop_mode:
+docker-compose build
+docker-compose up

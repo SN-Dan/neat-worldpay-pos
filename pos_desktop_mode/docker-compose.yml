@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  websocket-server:
+    build: .
+    container_name: websocket-server
+    ports:
+      - "8443:8443"
+    volumes:
+      - ./cert:/app/cert:ro
+    restart: always

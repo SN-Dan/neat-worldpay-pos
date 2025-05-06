@@ -13,11 +13,13 @@ const server = https.createServer(cert, app);
 const wss = new WebSocket.Server({ server });
 
 const clients = new Map();
+const syncMap = new Map();
 
 function heartbeat() { this.isAlive = true; }
 
 wss.on('connection', (ws) => {
   let deviceId = null;
+  let deviceType = null;
   ws.isAlive = true;
   ws.on('pong', heartbeat);
 
@@ -27,16 +29,22 @@ wss.on('connection', (ws) => {
 
       if (data.type === 'register') {
         deviceId = data.deviceId;
+        deviceType = data.deviceType
+        if(deviceType === "master") {
+            let syncedDeviceId = data.syncDeviceId
+            syncMap.set(deviceId, syncedDeviceId)
+            syncMap.set(syncedDeviceId, deviceId)
+        }
         clients.set(deviceId, ws);
         console.log(`Registered: ${deviceId}`);
         return;
       }
 
       if (data.type === 'message') {
-        const { to, payload } = data;
+        const { payload } = data;
         const msgId = `${Date.now()}-${Math.random()}`;
-        const target = clients.get(to);
-
+        const syncedDeviceId = syncMap.get(deviceId)
+        const target = clients.get(syncedDeviceId);
         if (target && target.readyState === WebSocket.OPEN) {
           const fullMsg = JSON.stringify({ from: deviceId, payload, msgId });
           target.send(fullMsg);
@@ -68,7 +76,14 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    if (deviceId) clients.delete(deviceId);
+    if (deviceId) {
+        clients.delete(deviceId);
+        let syncedDeviceId = syncMap.get(deviceId)
+        if(syncedDeviceId) {
+            syncMap.delete(deviceId)
+            syncMap.delete(syncedDeviceId)
+        }
+    }
     console.log(`Disconnected: ${deviceId}`);
   });
 
