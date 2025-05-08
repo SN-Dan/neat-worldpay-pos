@@ -64,7 +64,7 @@ class PosPaymentMethod(models.Model):
         return record
 
     def write(self, values):
-        if 'neat_worldpay_terminal_device_code' in values:
+        if self.neat_worldpay_terminal_device_code is None or 'neat_worldpay_terminal_device_code' in values:
             del values['neat_worldpay_terminal_device_code']
         if 'neat_worldpay_terminal_master_pwd_mock' in values:
             if values['neat_worldpay_terminal_master_pwd_mock'] is False or values[
