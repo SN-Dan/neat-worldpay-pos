@@ -101,7 +101,8 @@ odoo.define('pos_neatworldpay.payment', function(require) {
      const PaymentTerminal = PaymentInterface.extend({
         init: function () {
             this._super.apply(this, arguments);
-            if(this.payment_method.neat_worldpay_is_desktop_mode) {
+            const isMobile = device.includes("Android") || window.isNeatPOSAndroidApp
+            if(this.payment_method.neat_worldpay_is_desktop_mode && !isMobile) {
                 this.syncedDeviceCode = localStorage.getItem("neatworldpay_synced_device_code")
                 if(this.syncedDeviceCode) {
                     this._socket_connect()
