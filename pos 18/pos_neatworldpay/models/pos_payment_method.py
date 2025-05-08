@@ -26,6 +26,9 @@ class PosPaymentMethod(models.Model):
     neat_worldpay_terminal_master_pwd = fields.Char('Terminal Master Password', help='', groups="base.group_erp_manager")
     neat_worldpay_terminal_master_pwd_mock = fields.Char('Terminal Master Password', help='Password used to login in the terminal', default='', groups="base.group_erp_manager")
     neat_worldpay_is_mobile = fields.Boolean(string='Use Mobile Redirect', help="Indicates if you will use Odoo on the mobile device that has the Neat POS Suite app so it can improve the user experience by redirecting to the app when needed.")
+    neat_worldpay_is_desktop_mode = fields.Boolean(string='Use Desktop Mode', help="Indicates if you will use Odoo on a desktop device with the desktop mode local server so it can improve the user experience by triggering a payment on the terminal, enabling barcode scanning and receipt printing using the terminal.")
+    neat_worldpay_ws_url = fields.Char('WS URL', help='The Websocket server url on your local network for Desktop Mode')
+    neat_worldpay_ws_certificate = fields.Char('WS SSL Certificate', help='The certificate text that will be used on Neat POS Suite app.')
     neat_worldpay_terminal_pass_uuid = fields.Char('Terminal Pass UUID')
 
     neat_worldpay_device_type = fields.Selection(
@@ -61,9 +64,10 @@ class PosPaymentMethod(models.Model):
             values['neat_worldpay_terminal_pass_uuid'] = self.generate_password_uuid()
             hashed_password = generate_password_hash(values['neat_worldpay_terminal_master_pwd_mock'])
             values['neat_worldpay_terminal_master_pwd'] = hashed_password
-            values['neat_worldpay_terminal_device_code'] = self.generate_unique_datetime_id()
             del values['neat_worldpay_terminal_master_pwd_mock']
-        return super(PosPaymentMethod, self).create(values)
+        record = super(PosPaymentMethod, self).create(values)
+        record.write({ "neat_worldpay_terminal_device_code": f"{record.id:04d}"})
+        return record
 
     def write(self, values):
         if 'neat_worldpay_terminal_device_code' in values:
@@ -82,23 +86,4 @@ class PosPaymentMethod(models.Model):
 
     def generate_password_uuid(self):
         return datetime.utcnow().strftime('%Y%m%d%H%M%S') + str(random.randint(1000, 9999))
-
-    def generate_unique_datetime_id(self):
-        while True:
-            # Generate a datetime string with milliseconds and the full year
-            current_datetime = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')[:-3]
-
-            # Replace numbers with corresponding letters for uneven indexes
-            transformed_id = ''.join(
-                [chr(ord('a') + int(char)) if index % 2 != 0 else char for index, char in enumerate(current_datetime)])
-
-            # Insert dashes every 3 characters
-            formatted_id = '-'.join([transformed_id[i:i+3] for i in range(0, len(transformed_id), 3)])
-
-            # Check if the generated ID already exists in the database
-            existing_record = self.search([('neat_worldpay_terminal_device_code', '=', formatted_id)])
-
-            # If no matching record found, return the unique ID
-            if not existing_record:
-                return formatted_id
 

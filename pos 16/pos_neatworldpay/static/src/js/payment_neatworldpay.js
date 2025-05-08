@@ -12,6 +12,10 @@ odoo.define('pos_neatworldpay.payment', function(require) {
      const PaymentTerminal = PaymentInterface.extend({
         init: function () {
             this._super.apply(this, arguments);
+            if(this.payment_method.neat_worldpay_is_desktop_mode) {
+                this.syncedDeviceCode = localStorage.getItem("neatworldpay_synced_device_code")
+                this._socket_connect()
+            }
         },
         send_payment_request: async function(cid) {
             try {
@@ -91,6 +95,9 @@ odoo.define('pos_neatworldpay.payment', function(require) {
                         var encodedURL = encodeURIComponent(currentURL);
                         window.open("app://neat-worldpay-payment-android?paymentType=0&redirectUrl=" + encodedURL);
                     }
+                }
+                else if(result && result.status === 201 && data.PaymentMethod.neat_worldpay_is_desktop_mode && data.PaymentMethod.neat_worldpay_ws_url && !isMobile) {
+
                 }
                 line.set_payment_status('waitingCard');
                 while(true) {
@@ -186,6 +193,31 @@ odoo.define('pos_neatworldpay.payment', function(require) {
               };
              return data;
        },
+       _socket_connect() {
+            this.socket = new WebSocket(this.payment_method.neat_worldpay_ws_url)
+            this.socket.onopen = this._on_socket_open.bind(this)
+            this.socket.onmessage = this._on_socket_message.bind(this)
+            this.socket.onerror = this._on_socket_error.bind(this)
+            this.socket.onclose = this._on_socket_close.bind(this)
+       },
+       _on_socket_open: function() {
+            this.socket.send(JSON.stringify({ type: "register", deviceId: this.syncedDeviceCode + "-pc", deviceType: 'master', syncDeviceId: this.syncedDeviceCode }));
+            console.log("Connected and registered.");
+       },
+       _on_socket_message: function(event) {
+            const msg = JSON.parse(event.data);
+            console.log("Message from:", msg.from, msg.payload);
+            this.socket.send(JSON.stringify({ type: "ack", msgId: msg.msgId }));
+       },
+       _on_socket_error: function() {
+            this.socket.close()
+            console.log("Disconnected, retrying...");
+            setTimeout(this._socket_connect, 1000);
+       },
+       _on_socket_close: function() {
+            console.log("Disconnected, retrying...");
+            setTimeout(this._socket_connect, 1000);
+        }
      });
     return PaymentTerminal;
 });

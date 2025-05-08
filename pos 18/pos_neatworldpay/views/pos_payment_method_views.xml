@@ -15,6 +15,9 @@
                 <field name="neat_worldpay_device_type" invisible="use_payment_terminal != 'neatworldpay'"
                                 required="use_payment_terminal == 'neatworldpay'"/>
                 <field name="neat_worldpay_is_mobile" invisible="use_payment_terminal != 'neatworldpay'"/>
+                <field name="neat_worldpay_is_desktop_mode" invisible="use_payment_terminal != 'neatworldpay'"/>
+                <field name="neat_worldpay_ws_url" invisible="use_payment_terminal != 'neatworldpay'" readonly="neat_worldpay_is_desktop_mode == True"/>
+                <field name="neat_worldpay_ws_certificate" invisible="use_payment_terminal != 'neatworldpay'" readonly="neat_worldpay_is_desktop_mode == True"/>
             </xpath>
         </field>
     </record>
