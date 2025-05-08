@@ -3,6 +3,95 @@ odoo.define('pos_neatworldpay.payment', function(require) {
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
+    function addCss() {
+        const customModalStyles = `
+            .neat-worldpay-modal-text {
+                width: 380px;
+                text-align: center;
+            }
+            .neat-worldpay-modal {
+                display: inline-block;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+            }
+
+            .neat-worldpay-modal-content {
+                background-color: #fff;
+                border-radius: 5px;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                padding: 20px;
+                max-width: 400px;
+            }
+
+            /* Button styles */
+            .neat-worldpay-modal-button {
+                width: calc(100% - 20px);
+                height: 55px;
+                margin: 5px;
+                cursor: pointer;
+                font-size: 25px;
+                border: none;
+                background: darkseagreen;
+                color: white;
+            }
+            .neat-worldpay-modal-input {
+                width: calc(100% - 20px);
+                height: 45px;
+                margin: 5px;
+                padding: 10px;
+                font-size: 20px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+        `;
+
+        // Create a <style> element and append it to the document's <head>
+        const styleElement = document.createElement('style');
+        styleElement.innerHTML = customModalStyles;
+        document.head.appendChild(styleElement);
+    }
+    function displaySyncModal(self) {
+        const modal = document.createElement('div');
+        modal.classList.add('neat-worldpay-modal');
+        modal.innerHTML = `
+            <div class="neat-worldpay-modal-content">
+                <h2 class="neat-worldpay-modal-text">Enter the terminal device code to sync.</h2>
+                <div>
+                    <input type="text" id="deviceCodeInput" placeholder="Device Code"
+                        class="neat-worldpay-modal-input" />
+                    <button class="neat-worldpay-modal-button" id="btnSync">Sync</button>
+                </div>
+            </div>
+        `;
+
+        // Add the modal to the document body
+        document.body.appendChild(modal);
+
+        // Function to close the modal
+        function closeModal() {
+            document.body.removeChild(modal);
+        }
+
+        // Event listeners for button clicks
+        document.getElementById("btnSync").addEventListener("click", function(e) {
+            const deviceCode = document.getElementById('deviceCodeInput').value;
+            localStorage.setItem('neatworldpay_synced_device_code', deviceCode)
+            closeModal();
+            if(self) {
+                self._socket_connect()
+            }
+        });
+    }
+    addCss()
 
      const core = require('web.core');
      const rpc = require('web.rpc');
@@ -14,7 +103,12 @@ odoo.define('pos_neatworldpay.payment', function(require) {
             this._super.apply(this, arguments);
             if(this.payment_method.neat_worldpay_is_desktop_mode) {
                 this.syncedDeviceCode = localStorage.getItem("neatworldpay_synced_device_code")
-                this._socket_connect()
+                if(this.syncedDeviceCode) {
+                    this._socket_connect()
+                }
+                else {
+                    displaySyncModal(this)
+                }
             }
         },
         send_payment_request: async function(cid) {
