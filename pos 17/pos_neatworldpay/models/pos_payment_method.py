@@ -22,7 +22,18 @@ class PosPaymentMethod(models.Model):
     def _get_payment_terminal_selection(self):
         return super(PosPaymentMethod, self)._get_payment_terminal_selection() + [('neatworldpay', 'NEAT Worldpay Terminal')]
 
-    neat_worldpay_terminal_device_code = fields.Char('Terminal ID', help='This is a uniquely generated identifier upon creation for each terminal used to login. The same Terminal ID should never be used for more than 1 terminal')
+    @api.depends('neat_worldpay_terminal_master_pwd')
+    def _compute_device_code(self):
+        for record in self:
+            if record.id and not record.neat_worldpay_terminal_device_code:
+                record.neat_worldpay_terminal_device_code = f"{record.id:04d}"
+
+    neat_worldpay_terminal_device_code = fields.Char(
+        string="Device Code",
+        compute="_compute_device_code",
+        store=True,
+        readonly=True,
+    )
     neat_worldpay_terminal_master_pwd = fields.Char('Terminal Master Password', help='', groups="base.group_erp_manager")
     neat_worldpay_terminal_master_pwd_mock = fields.Char('Terminal Master Password', help='Password used to login in the terminal', default='', groups="base.group_erp_manager")
     neat_worldpay_is_mobile = fields.Boolean(string='Use Mobile Redirect', help="Indicates if you will use Odoo on the mobile device that has the Neat POS Suite app so it can improve the user experience by redirecting to the app when needed.")
@@ -61,11 +72,10 @@ class PosPaymentMethod(models.Model):
             values['neat_worldpay_terminal_master_pwd'] = hashed_password
             del values['neat_worldpay_terminal_master_pwd_mock']
         record = super(PosPaymentMethod, self).create(values)
-        record.write({ "neat_worldpay_terminal_device_code": f"{record.id:04d}"})
         return record
 
     def write(self, values):
-        if self.neat_worldpay_terminal_device_code is not None and 'neat_worldpay_terminal_device_code' in values:
+        if 'neat_worldpay_terminal_device_code' in values:
             del values['neat_worldpay_terminal_device_code']
         if 'neat_worldpay_terminal_master_pwd_mock' in values:
             if values['neat_worldpay_terminal_master_pwd_mock'] is False or values[
