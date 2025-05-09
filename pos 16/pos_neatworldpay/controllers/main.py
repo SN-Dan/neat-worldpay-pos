@@ -584,7 +584,15 @@ class PosWorldpayController(http.Controller):
         if len(pos_payment_method) == 0:
             return json.dumps({ 'status': 404 })
 
-        return json.dumps({ 'status': 200, 'data': { 'name': pos_payment_method[0].name, 'url': pos_payment_method[0].company_id.website } })
+        return json.dumps({ 
+            'status': 200, 
+            'data': { 
+                'name': pos_payment_method[0].name, 
+                'url': pos_payment_method[0].company_id.website, 
+                'ws_certificate': pos_payment_method[0].neat_worldpay_ws_certificate, 
+                'ws_url': pos_payment_method[0].neat_worldpay_ws_url 
+            } 
+        })
 
 
 
