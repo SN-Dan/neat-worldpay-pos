@@ -17,9 +17,9 @@
                                 'required': [('use_payment_terminal', '=', 'neatworldpay')]}"/>
                 <field name="neat_worldpay_is_mobile" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')]}"/>
                 <field name="neat_worldpay_is_desktop_mode" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')]}"/>
-                <field name="neat_worldpay_ws_url" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')], 'readonly': [('neat_worldpay_is_desktop_mode', '=', True)]}"/>
-                <field name="neat_worldpay_ws_certificate" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')], 'readonly': [('neat_worldpay_is_desktop_mode', '=', True)]}"/>
-                <field name="neat_worldpay_is_terminal_printer_communication_allowed" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')], 'readonly': [('neat_worldpay_is_desktop_mode', '=', True)]}"/>
+                <field name="neat_worldpay_ws_url" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')], 'readonly': [('neat_worldpay_is_desktop_mode', '!=', True)]}"/>
+                <field name="neat_worldpay_ws_certificate" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')], 'readonly': [('neat_worldpay_is_desktop_mode', '!=', True)]}"/>
+                <field name="neat_worldpay_is_terminal_printer_communication_allowed" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')], 'readonly': [('neat_worldpay_is_desktop_mode', '!=', True)]}"/>
             </xpath>
         </field>
     </record>
