@@ -101,6 +101,7 @@ odoo.define('pos_neatworldpay.payment', function(require) {
      const PaymentTerminal = PaymentInterface.extend({
         init: function () {
             this._super.apply(this, arguments);
+            const device = window.navigator.userAgent
             const isMobile = device.includes("Android") || window.isNeatPOSAndroidApp
             if(this.payment_method.neat_worldpay_is_desktop_mode && !isMobile) {
                 this.syncedDeviceCode = localStorage.getItem("neatworldpay_synced_device_code")
@@ -301,7 +302,9 @@ odoo.define('pos_neatworldpay.payment', function(require) {
        },
        _on_socket_message: function(event) {
             const msg = JSON.parse(event.data);
-            console.log("Message from:", msg.from, msg.payload);
+            if(msg.msgType === 'barcode') {
+                this._type_on_keyboard(msg.msgPayload)
+            }
             this.socket.send(JSON.stringify({ type: "ack", msgId: msg.msgId }));
        },
        _on_socket_error: function() {
@@ -312,6 +315,21 @@ odoo.define('pos_neatworldpay.payment', function(require) {
        _on_socket_close: function() {
             console.log("Disconnected, retrying...");
             setTimeout(this._socket_connect, 1000);
+        },
+        _type_on_keyboard: function(inputString) {
+            const barcodeInput = document.querySelector('body .o-barcode-input');
+            console.log(barcodeInput);
+  
+            for (let i = 0; i < inputString.length; i++) {
+                const char = inputString.charAt(i);
+                const event = new KeyboardEvent('keydown', {
+                    key: char,
+                    bubbles: true,
+                    cancelable: true
+                });
+                console.log(char);
+                document.body.dispatchEvent(event);
+            }
         }
      });
     return PaymentTerminal;
