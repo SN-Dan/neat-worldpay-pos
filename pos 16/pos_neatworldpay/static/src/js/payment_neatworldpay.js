@@ -59,7 +59,7 @@ odoo.define('pos_neatworldpay.payment', function(require) {
         styleElement.innerHTML = customModalStyles;
         document.head.appendChild(styleElement);
     }
-    function displaySyncModal(self) {
+    function displaySyncModal() {
         const modal = document.createElement('div');
         modal.classList.add('neat-worldpay-modal');
         modal.innerHTML = `
@@ -86,30 +86,77 @@ odoo.define('pos_neatworldpay.payment', function(require) {
             const deviceCode = document.getElementById('deviceCodeInput').value;
             localStorage.setItem('neatworldpay_synced_device_code', deviceCode)
             closeModal();
-            if(self) {
-                self._socket_connect()
-            }
+            socket_connect()
         });
     }
-    addCss()
+    var isSocketConnected = false
 
-     const core = require('web.core');
-     const rpc = require('web.rpc');
-     const PaymentInterface = require('point_of_sale.PaymentInterface');
-     const { Gui } = require('point_of_sale.Gui');
-     const _t = core._t;
-     const PaymentTerminal = PaymentInterface.extend({
+    window.is_printing_allowed_desktop_ws_map = {}
+    function on_socket_open() {
+        const syncedDeviceCode = localStorage.getItem("neatworldpay_synced_device_code")
+        window.desktop_ws.send(JSON.stringify({ type: "register", deviceId: syncedDeviceCode + "-pc", deviceType: 'master', syncDeviceId: syncedDeviceCode }));
+        console.log("Connected and registered.");
+    }
+    function type_on_keyboard(inputString) {
+        const barcodeInput = document.querySelector('body .o-barcode-input');
+        console.log(barcodeInput);
+
+        for (let i = 0; i < inputString.length; i++) {
+            const char = inputString.charAt(i);
+            const event = new KeyboardEvent('keydown', {
+                key: char,
+                bubbles: true,
+                cancelable: true
+            });
+            console.log(char);
+            document.body.dispatchEvent(event);
+        }
+    }
+    function on_socket_message(event) {
+        const msg = JSON.parse(event.data);
+        if(msg.msgType === 'barcode') {
+            type_on_keyboard(msg.msgPayload)
+        }
+        window.desktop_ws.send(JSON.stringify({ type: "ack", msgId: msg.msgId }));
+    }
+    function on_socket_error() {
+        window.desktop_ws.close()
+        console.log("Disconnected, retrying...");
+        setTimeout(socket_connect, 1000);
+    }
+    function on_socket_close() {
+        console.log("Disconnected, retrying...");
+        setTimeout(socket_connect, 1000);
+    }
+    function socket_connect(wsUrl) {
+        window.desktop_ws = new WebSocket(wsUrl)
+        window.desktop_ws.onopen = on_socket_open
+        window.desktop_ws.onmessage = on_socket_message
+        window.desktop_ws.onerror = on_socket_error
+        window.desktop_ws.onclose = on_socket_close
+    }
+
+    addCss()
+    const core = require('web.core');
+    const rpc = require('web.rpc');
+    const PaymentInterface = require('point_of_sale.PaymentInterface');
+    const { Gui } = require('point_of_sale.Gui');
+    const _t = core._t;
+    const PaymentTerminal = PaymentInterface.extend({
         init: function () {
             this._super.apply(this, arguments);
             const device = window.navigator.userAgent
             const isMobile = device.includes("Android") || window.isNeatPOSAndroidApp
-            if(this.payment_method.neat_worldpay_is_desktop_mode && !isMobile) {
-                this.syncedDeviceCode = localStorage.getItem("neatworldpay_synced_device_code")
-                if(this.syncedDeviceCode) {
-                    this._socket_connect()
-                }
-                else {
-                    displaySyncModal(this)
+            
+            if(this.payment_method.neat_worldpay_is_desktop_mode && !isMobile){
+                window.is_printing_allowed_desktop_ws_map[this.payment_method.neat_worldpay_terminal_device_code] = this.payment_method.neat_worldpay_is_terminal_printer_communication_allowed
+                if(!isSocketConnected) {
+                    if(localStorage.getItem("neatworldpay_synced_device_code")) {
+                        socket_connect(this.payment_method.neat_worldpay_ws_url)
+                    }
+                    else {
+                        displaySyncModal(this.payment_method.neat_worldpay_ws_url)
+                    }
                 }
             }
         },
@@ -192,8 +239,8 @@ odoo.define('pos_neatworldpay.payment', function(require) {
                         window.open("app://neat-worldpay-payment-android?paymentType=0&redirectUrl=" + encodedURL);
                     }
                 }
-                else if(result && result.status === 201 && data.PaymentMethod.neat_worldpay_is_desktop_mode && data.PaymentMethod.neat_worldpay_ws_url && !isMobile) {
-
+                else if(result && result.status === 201 && data.PaymentMethod.neat_worldpay_is_desktop_mode && data.PaymentMethod.neat_worldpay_ws_url && !isMobile && data.PaymentMethod.neat_worldpay_terminal_device_code === localStorage.getItem("neatworldpay_synced_device_code")) {
+                    window.desktop_ws.send(JSON.stringify({ type: "message", msgType: "payment" }));
                 }
                 line.set_payment_status('waitingCard');
                 while(true) {
@@ -288,49 +335,7 @@ odoo.define('pos_neatworldpay.payment', function(require) {
                     'PaymentMethod': this.payment_method
               };
              return data;
-       },
-       _socket_connect() {
-            this.socket = new WebSocket(this.payment_method.neat_worldpay_ws_url)
-            this.socket.onopen = this._on_socket_open.bind(this)
-            this.socket.onmessage = this._on_socket_message.bind(this)
-            this.socket.onerror = this._on_socket_error.bind(this)
-            this.socket.onclose = this._on_socket_close.bind(this)
-       },
-       _on_socket_open: function() {
-            this.socket.send(JSON.stringify({ type: "register", deviceId: this.syncedDeviceCode + "-pc", deviceType: 'master', syncDeviceId: this.syncedDeviceCode }));
-            console.log("Connected and registered.");
-       },
-       _on_socket_message: function(event) {
-            const msg = JSON.parse(event.data);
-            if(msg.msgType === 'barcode') {
-                this._type_on_keyboard(msg.msgPayload)
-            }
-            this.socket.send(JSON.stringify({ type: "ack", msgId: msg.msgId }));
-       },
-       _on_socket_error: function() {
-            this.socket.close()
-            console.log("Disconnected, retrying...");
-            setTimeout(this._socket_connect, 1000);
-       },
-       _on_socket_close: function() {
-            console.log("Disconnected, retrying...");
-            setTimeout(this._socket_connect, 1000);
-        },
-        _type_on_keyboard: function(inputString) {
-            const barcodeInput = document.querySelector('body .o-barcode-input');
-            console.log(barcodeInput);
-  
-            for (let i = 0; i < inputString.length; i++) {
-                const char = inputString.charAt(i);
-                const event = new KeyboardEvent('keydown', {
-                    key: char,
-                    bubbles: true,
-                    cancelable: true
-                });
-                console.log(char);
-                document.body.dispatchEvent(event);
-            }
-        }
+       }
      });
     return PaymentTerminal;
 });

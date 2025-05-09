@@ -29,6 +29,7 @@ class PosPaymentMethod(models.Model):
     neat_worldpay_is_desktop_mode = fields.Boolean(string='Use Desktop Mode', help="Indicates if you will use Odoo on a desktop device with the desktop mode local server so it can improve the user experience by triggering a payment on the terminal, enabling barcode scanning and receipt printing using the terminal.")
     neat_worldpay_ws_url = fields.Char('WS URL', help='The Websocket server url on your local network for Desktop Mode')
     neat_worldpay_ws_certificate = fields.Char('WS SSL Certificate', help='The certificate text that will be used on Neat POS Suite app.')
+    neat_worldpay_is_terminal_printer_communication_allowed = fields.Boolean(string='Allow Terminal Printer Communication', help="Allows communication to the terminal's configured printer")
     neat_worldpay_terminal_pass_uuid = fields.Char('Terminal Pass UUID')
 
     neat_worldpay_device_type = fields.Selection(
@@ -52,7 +53,7 @@ class PosPaymentMethod(models.Model):
     @api.model
     def _load_pos_data_fields(self, config_id):
         params = super()._load_pos_data_fields(config_id)
-        params += ['neat_worldpay_terminal_device_code', 'neat_worldpay_is_mobile', 'neat_worldpay_device_type']
+        params += ['neat_worldpay_terminal_device_code', 'neat_worldpay_is_mobile', 'neat_worldpay_is_desktop_mode', 'neat_worldpay_ws_url', 'neat_worldpay_is_terminal_printer_communication_allowed', 'neat_worldpay_device_type']
         return params
 
     @api.model
