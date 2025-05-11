@@ -60,6 +60,9 @@ odoo.define('pos_neatworldpay.payment', function(require) {
         document.head.appendChild(styleElement);
     }
     function displaySyncModal() {
+        if (document.querySelector('.neat-worldpay-modal')) {
+            return; // Modal already exists, do nothing
+        }
         const modal = document.createElement('div');
         modal.classList.add('neat-worldpay-modal');
         modal.innerHTML = `
@@ -80,9 +83,9 @@ odoo.define('pos_neatworldpay.payment', function(require) {
         function closeModal() {
             document.body.removeChild(modal);
         }
-
+        var btn = document.getElementById("btnSync")
         // Event listeners for button clicks
-        document.getElementById("btnSync").addEventListener("click", function(e) {
+        btn.addEventListener("click", function(e) {
             const deviceCode = document.getElementById('deviceCodeInput').value;
             localStorage.setItem('neatworldpay_synced_device_code', deviceCode)
             closeModal();
@@ -128,12 +131,14 @@ odoo.define('pos_neatworldpay.payment', function(require) {
         console.log("Disconnected, retrying...");
         setTimeout(socket_connect, 1000);
     }
-    function socket_connect(wsUrl) {
-        window.desktop_ws = new WebSocket(wsUrl)
-        window.desktop_ws.onopen = on_socket_open
-        window.desktop_ws.onmessage = on_socket_message
-        window.desktop_ws.onerror = on_socket_error
-        window.desktop_ws.onclose = on_socket_close
+    function socket_connect() {
+        if(!window.desktop_ws) {
+            window.desktop_ws = new WebSocket(window.desktop_ws_url)
+            window.desktop_ws.onopen = on_socket_open
+            window.desktop_ws.onmessage = on_socket_message
+            window.desktop_ws.onerror = on_socket_error
+            window.desktop_ws.onclose = on_socket_close
+        }
     }
 
     addCss()
@@ -150,12 +155,13 @@ odoo.define('pos_neatworldpay.payment', function(require) {
             
             if(this.payment_method.neat_worldpay_is_desktop_mode && !isMobile){
                 window.is_printing_allowed_desktop_ws_map[this.payment_method.neat_worldpay_terminal_device_code] = this.payment_method.neat_worldpay_is_terminal_printer_communication_allowed
-                if(!isSocketConnected) {
+                if(!isSocketConnected && this.payment_method.neat_worldpay_ws_url) {
+                    window.desktop_ws_url = this.payment_method.neat_worldpay_ws_url
                     if(localStorage.getItem("neatworldpay_synced_device_code")) {
-                        socket_connect(this.payment_method.neat_worldpay_ws_url)
+                        socket_connect()
                     }
                     else {
-                        displaySyncModal(this.payment_method.neat_worldpay_ws_url)
+                        displaySyncModal()
                     }
                 }
             }

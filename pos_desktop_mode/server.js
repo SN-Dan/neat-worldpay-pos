@@ -26,7 +26,7 @@ wss.on('connection', (ws) => {
   ws.on('message', (msg) => {
     try {
       const data = JSON.parse(msg);
-
+      console.log(data)
       if (data.type === 'register') {
         deviceId = data.deviceId;
         deviceType = data.deviceType
@@ -41,32 +41,32 @@ wss.on('connection', (ws) => {
       }
 
       if (data.type === 'message') {
-        const { payload } = data;
+        const { msgType, msgPayload } = data;
         const msgId = `${Date.now()}-${Math.random()}`;
         const syncedDeviceId = syncMap.get(deviceId)
         const target = clients.get(syncedDeviceId);
         if (target && target.readyState === WebSocket.OPEN) {
-          const fullMsg = JSON.stringify({ from: deviceId, payload, msgId });
+          const fullMsg = JSON.stringify({ from: deviceId, msgType, msgPayload, msgId });
           target.send(fullMsg);
 
-          const timeout = setTimeout(() => {
-            if (target.readyState === WebSocket.OPEN) {
-              console.log(`Resending to ${to} due to no ACK: ${msgId}`);
-              target.send(fullMsg);
-            }
-          }, 1000);
+          // const timeout = setTimeout(() => {
+          //   if (target.readyState === WebSocket.OPEN) {
+          //     console.log(`Resending to ${syncedDeviceId} due to no ACK: ${msgId}`);
+          //     target.send(fullMsg);
+          //   }
+          // }, 5000);
 
-          const ackHandler = (ackMsg) => {
-            try {
-              const ackData = JSON.parse(ackMsg);
-              if (ackData.type === 'ack' && ackData.msgId === msgId) {
-                clearTimeout(timeout);
-                ws.removeListener('message', ackHandler);
-              }
-            } catch {}
-          };
+          // const ackHandler = (ackMsg) => {
+          //   try {
+          //     const ackData = JSON.parse(ackMsg);
+          //     if (ackData.type === 'ack' && ackData.msgId === msgId) {
+          //       clearTimeout(timeout);
+          //       ws.removeListener('message', ackHandler);
+          //     }
+          //   } catch {}
+          // };
 
-          ws.on('message', ackHandler);
+          // ws.on('message', ackHandler);
         }
       }
 
