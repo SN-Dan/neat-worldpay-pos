@@ -89,16 +89,8 @@ odoo.define('pos_neatworldpay.payment', function(require) {
             const deviceCode = document.getElementById('deviceCodeInput').value;
             localStorage.setItem('neatworldpay_synced_device_code', deviceCode)
             closeModal();
-            socket_connect()
+            socket_connect(true)
         });
-    }
-    var isSocketConnected = false
-
-    window.is_printing_allowed_desktop_ws_map = {}
-    function on_socket_open() {
-        const syncedDeviceCode = localStorage.getItem("neatworldpay_synced_device_code")
-        window.desktop_ws.send(JSON.stringify({ type: "register", deviceId: syncedDeviceCode + "-pc", deviceType: 'master', syncDeviceId: syncedDeviceCode }));
-        console.log("Connected and registered.");
     }
     function type_on_keyboard(inputString) {
         const barcodeInput = document.querySelector('body .o-barcode-input');
@@ -115,29 +107,31 @@ odoo.define('pos_neatworldpay.payment', function(require) {
             document.body.dispatchEvent(event);
         }
     }
-    function on_socket_message(event) {
-        const msg = JSON.parse(event.data);
-        if(msg.msgType === 'barcode') {
-            type_on_keyboard(msg.msgPayload)
-        }
-        window.desktop_ws.send(JSON.stringify({ type: "ack", msgId: msg.msgId }));
-    }
-    function on_socket_error() {
-        window.desktop_ws.close()
-        console.log("Disconnected, retrying...");
-        setTimeout(socket_connect, 1000);
-    }
-    function on_socket_close() {
-        console.log("Disconnected, retrying...");
-        setTimeout(socket_connect, 1000);
-    }
-    function socket_connect() {
-        if(!window.desktop_ws) {
+
+    window.is_printing_allowed_desktop_ws_map = {}
+    function socket_connect(initialConnect = false) {
+        if(!window.desktop_ws || !initialConnect) {
             window.desktop_ws = new WebSocket(window.desktop_ws_url)
-            window.desktop_ws.onopen = on_socket_open
-            window.desktop_ws.onmessage = on_socket_message
-            window.desktop_ws.onerror = on_socket_error
-            window.desktop_ws.onclose = on_socket_close
+            window.desktop_ws.onopen = () => {
+                const syncedDeviceCode = localStorage.getItem("neatworldpay_synced_device_code")
+                window.desktop_ws.send(JSON.stringify({ type: "register", deviceId: syncedDeviceCode + "-pc", deviceType: 'master', syncDeviceId: syncedDeviceCode }));
+                console.log("Connected and registered.");
+            }
+            window.desktop_ws.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+                if(msg.msgType === 'barcode') {
+                    type_on_keyboard(msg.msgPayload)
+                }
+                window.desktop_ws.send(JSON.stringify({ type: "ack", msgId: msg.msgId }));
+            }
+            window.desktop_ws.onerror = () => {
+                window.desktop_ws.close()
+                console.log("Disconnected, retrying...");
+            }
+            window.desktop_ws.onclose = () => {
+                console.log("Disconnected, retrying...");
+                setTimeout(socket_connect, 1000);
+            }
         }
     }
 
@@ -155,10 +149,10 @@ odoo.define('pos_neatworldpay.payment', function(require) {
             
             if(this.payment_method.neat_worldpay_is_desktop_mode && !isMobile){
                 window.is_printing_allowed_desktop_ws_map[this.payment_method.neat_worldpay_terminal_device_code] = this.payment_method.neat_worldpay_is_terminal_printer_communication_allowed
-                if(!isSocketConnected && this.payment_method.neat_worldpay_ws_url) {
+                if(this.payment_method.neat_worldpay_ws_url) {
                     window.desktop_ws_url = this.payment_method.neat_worldpay_ws_url
                     if(localStorage.getItem("neatworldpay_synced_device_code")) {
-                        socket_connect()
+                        socket_connect(true)
                     }
                     else {
                         displaySyncModal()
