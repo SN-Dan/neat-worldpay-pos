@@ -7,32 +7,169 @@ export class PaymentNeatWorldpay extends PaymentInterface {
     sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
-    // displayMessage(self, header, message, btnText = "Ok", btnId = "btnOk") {
-    //         const modal = document.createElement('div');
-    //         modal.classList.add('neat-worldpay-modal');
-    //         modal.innerHTML = `
-    //             <div class="neat-worldpay-modal-content">
-    //                 <h2 class="neat-worldpay-modal-text">${header}</h2>
-    //                 <p>${message}</p>
-    //                 <div>
-    //                     <button class="neat-worldpay-modal-button" id="${btnId}">${btnText}</button>
-    //                 </div>
-    //             </div>
-    //         `;
+    addCss() {
+        const customModalStyles = `
+            .neat-worldpay-modal-text {
+                width: 380px;
+                text-align: center;
+            }
+            .neat-worldpay-modal {
+                display: inline-block;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+            }
 
-    //         document.body.appendChild(modal);
-    //         function closeModal() {
-    //             document.body.removeChild(modal);
-    //         }
-    //         document.getElementById(btnId).addEventListener("click", function() {
-    //             closeModal();
-    //         });
-    // }
+            .neat-worldpay-modal-content {
+                background-color: #fff;
+                border-radius: 5px;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                padding: 20px;
+                max-width: 400px;
+            }
+
+            /* Button styles */
+            .neat-worldpay-modal-button {
+                width: calc(100% - 20px);
+                height: 55px;
+                margin: 5px;
+                cursor: pointer;
+                font-size: 25px;
+                border: none;
+                background: darkseagreen;
+                color: white;
+            }
+            .neat-worldpay-modal-input {
+                width: calc(100% - 20px);
+                height: 45px;
+                margin: 5px;
+                padding: 10px;
+                font-size: 20px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+        `;
+
+        // Create a <style> element and append it to the document's <head>
+        const styleElement = document.createElement('style');
+        styleElement.innerHTML = customModalStyles;
+        document.head.appendChild(styleElement);
+    }
+    displaySyncModal() {
+        if (document.querySelector('.neat-worldpay-modal')) {
+            return; // Modal already exists, do nothing
+        }
+        const modal = document.createElement('div');
+        modal.classList.add('neat-worldpay-modal');
+        modal.innerHTML = `
+            <div class="neat-worldpay-modal-content">
+                <h2 class="neat-worldpay-modal-text">Enter the terminal device code to sync.</h2>
+                <div>
+                    <input type="text" id="deviceCodeInput" placeholder="Device Code"
+                        class="neat-worldpay-modal-input" />
+                    <button class="neat-worldpay-modal-button" id="btnSync">Sync</button>
+                </div>
+            </div>
+        `;
+
+        // Add the modal to the document body
+        document.body.appendChild(modal);
+
+        // Function to close the modal
+        function closeModal() {
+            document.body.removeChild(modal);
+        }
+        var btn = document.getElementById("btnSync")
+        // Event listeners for button clicks
+        btn.addEventListener("click", function(e) {
+            const deviceCode = document.getElementById('deviceCodeInput').value;
+            localStorage.setItem('neatworldpay_synced_device_code', deviceCode)
+            closeModal();
+            this.socket_connect(true)
+        });
+    }
+    type_on_keyboard(inputString) {
+        const barcodeInput = document.querySelector('body .o-barcode-input');
+        console.log(barcodeInput);
+
+        for (let i = 0; i < inputString.length; i++) {
+            const char = inputString.charAt(i);
+            const event = new KeyboardEvent('keydown', {
+                key: char,
+                bubbles: true,
+                cancelable: true
+            });
+            console.log(char);
+            document.body.dispatchEvent(event);
+        }
+    }
+    socket_connect(initialConnect = false) {
+        if(!window.desktop_ws || !initialConnect) {
+            window.desktop_ws = new WebSocket(window.desktop_ws_url)
+            window.desktop_ws.onopen = () => {
+                const syncedDeviceCode = localStorage.getItem("neatworldpay_synced_device_code")
+                window.desktop_ws.send(JSON.stringify({ type: "register", deviceId: syncedDeviceCode + "-pc" }));
+                console.log("Connected and registered.");
+            }
+            window.desktop_ws.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+                if(msg.msgType === 'barcode') {
+                    const barcodeInput = document.querySelector('body .o-barcode-input');
+                    console.log(barcodeInput);
+
+                    for (let i = 0; i < msg.msgPayload.length; i++) {
+                        const char = msg.msgPayload.charAt(i);
+                        const event = new KeyboardEvent('keydown', {
+                            key: char,
+                            bubbles: true,
+                            cancelable: true
+                        });
+                        console.log(char);
+                        document.body.dispatchEvent(event);
+                    }
+                }
+                window.desktop_ws.send(JSON.stringify({ type: "ack", msgId: msg.msgId }));
+            }
+            window.desktop_ws.onerror = () => {
+                window.desktop_ws.close()
+                console.log("Disconnected, retrying...");
+            }
+            window.desktop_ws.onclose = () => {
+                console.log("Disconnected, retrying...");
+                setTimeout(this.socket_connect, 1000);
+            }
+        }
+    }
     /**
      * @override
     */
     setup() {
         super.setup(...arguments);
+        window.is_printing_allowed_desktop_ws_map = {}
+        this.addCss()
+        const device = window.navigator.userAgent
+        const isMobile = device.includes("Android") || window.isNeatPOSAndroidApp
+        
+        if(this.payment_method.neat_worldpay_is_desktop_mode && !isMobile){
+            window.is_printing_allowed_desktop_ws_map[this.payment_method.neat_worldpay_terminal_device_code] = this.payment_method.neat_worldpay_is_terminal_printer_communication_allowed
+            if(this.payment_method.neat_worldpay_ws_url) {
+                window.desktop_ws_url = this.payment_method.neat_worldpay_ws_url
+                if(localStorage.getItem("neatworldpay_synced_device_code")) {
+                    this.socket_connect(true)
+                }
+                else {
+                    this.displaySyncModal()
+                }
+            }
+        }
     }
     /**
      * @override

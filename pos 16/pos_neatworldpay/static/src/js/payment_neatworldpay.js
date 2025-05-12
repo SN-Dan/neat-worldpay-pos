@@ -114,7 +114,7 @@ odoo.define('pos_neatworldpay.payment', function(require) {
             window.desktop_ws = new WebSocket(window.desktop_ws_url)
             window.desktop_ws.onopen = () => {
                 const syncedDeviceCode = localStorage.getItem("neatworldpay_synced_device_code")
-                window.desktop_ws.send(JSON.stringify({ type: "register", deviceId: syncedDeviceCode + "-pc", deviceType: 'master', syncDeviceId: syncedDeviceCode }));
+                window.desktop_ws.send(JSON.stringify({ type: "register", deviceId: syncedDeviceCode + "-pc" }));
                 console.log("Connected and registered.");
             }
             window.desktop_ws.onmessage = (event) => {

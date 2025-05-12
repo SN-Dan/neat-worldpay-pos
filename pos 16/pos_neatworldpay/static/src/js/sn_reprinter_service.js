@@ -11,7 +11,8 @@ odoo.define('pos_neatworldpay.SNReprintReceiptScreen', function(require) {
     const SNReprintReceiptScreen = (ReprintReceiptScreen) => class extends ReprintReceiptScreen {
         async getReceiptImage() {
             const printer = new Printer(null, this.env.pos);
-            const image = await printer.htmlToImg(this.orderReceipt.el.firstElementChild.outerHTML)
+            printer.isEmail = true
+            const image = await printer.htmlToImg(this.orderReceipt.el.innerHTML)
             return image
         }
         async _printWeb() {
