@@ -40,17 +40,17 @@ export class SNPrinterService extends PrinterService {
         }
     }
     async printHtml(el) {
-        if(window.isNeatPOSiOSApp && window.useBluetoothPrinter) {
-            const image = this.processCanvas(
-                await htmlToCanvas(el, { addClass: "pos-receipt-print" })
-            );
-            window.webkit.messageHandlers.bluetoothPrintReceipt.postMessage(image);
-        }
-        else if(window.isNeatPOSAndroidApp && window.useBluetoothPrinter) {
+        if(window.isNeatPOSAndroidApp && window.useBluetoothPrinter) {
             const image = this.processCanvas(
                 await htmlToCanvas(el, { addClass: "pos-receipt-print" })
             );
             AndroidInterface.onBluetoothPrintReceipt(image)
+        }
+        else if(window.desktop_ws && window.is_printing_allowed_desktop_ws_map && window.is_printing_allowed_desktop_ws_map[localStorage.getItem("neatworldpay_synced_device_code")]) {
+            const image = this.processCanvas(
+                await htmlToCanvas(el, { addClass: "pos-receipt-print" })
+            );
+            window.desktop_ws.send(JSON.stringify({ type: "message", msgType: "print", msgPayload: image }));
         }
         else {
             this.setPrinter(this.hardware_proxy.printer);

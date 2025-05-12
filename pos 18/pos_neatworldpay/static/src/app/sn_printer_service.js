@@ -2,6 +2,8 @@
 
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
+import { ConfirmPopup } from "@point_of_sale/app/utils/confirm_popup/confirm_popup";
+import { ErrorPopup } from "@point_of_sale/app/errors/popups/error_popup";
 import { PrinterService } from "@point_of_sale/app/printer/printer_service";
 import { htmlToCanvas } from "@point_of_sale/app/printer/render_service";
 
@@ -33,20 +35,17 @@ export class SNPrinterService extends PrinterService {
         }
     }
     async printHtml(el) {
-        if(window.isNeatPOSiOSApp && window.useBluetoothPrinter) {
+        if(window.isNeatPOSAndroidApp && window.useBluetoothPrinter) {
             const image = this.processCanvas(
                 await htmlToCanvas(el, { addClass: "pos-receipt-print" })
             );
-            window.webkit.messageHandlers.bluetoothPrintReceipt.postMessage(image);
-            return true
-        }
-        else if(window.isNeatPOSAndroidApp && window.useBluetoothPrinter) {
-            const image = this.processCanvas(
-                await htmlToCanvas(el, { addClass: "pos-receipt-print" })
-            );
-            
             AndroidInterface.onBluetoothPrintReceipt(image)
-            return true
+        }
+        else if(window.desktop_ws && window.is_printing_allowed_desktop_ws_map && window.is_printing_allowed_desktop_ws_map[localStorage.getItem("neatworldpay_synced_device_code")]) {
+            const image = this.processCanvas(
+                await htmlToCanvas(el, { addClass: "pos-receipt-print" })
+            );
+            window.desktop_ws.send(JSON.stringify({ type: "message", msgType: "print", msgPayload: image }));
         }
         else {
             this.setPrinter(this.hardware_proxy.printer);

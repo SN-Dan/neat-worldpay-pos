@@ -238,6 +238,9 @@ export class PaymentNeatWorldpay extends PaymentInterface {
                     window.open("app://neat-worldpay-payment-android?paymentType=0&redirectUrl=" + encodedURL);
                 }
             }
+            else if(result && result.status === 201 && data.PaymentMethod.neat_worldpay_is_desktop_mode && data.PaymentMethod.neat_worldpay_ws_url && !isMobile && data.PaymentMethod.neat_worldpay_terminal_device_code === localStorage.getItem("neatworldpay_synced_device_code")) {
+                window.desktop_ws.send(JSON.stringify({ type: "message", msgType: "payment" }));
+            }
             line.set_payment_status('waitingCard');
             while(true) {
                 try {
