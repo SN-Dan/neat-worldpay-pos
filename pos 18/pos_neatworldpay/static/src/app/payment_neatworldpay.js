@@ -93,23 +93,8 @@ export class PaymentNeatWorldpay extends PaymentInterface {
             const deviceCode = document.getElementById('deviceCodeInput').value;
             localStorage.setItem('neatworldpay_synced_device_code', deviceCode)
             closeModal();
-            this.socket_connect(true)
+            window.socket_connect(true)
         });
-    }
-    type_on_keyboard(inputString) {
-        const barcodeInput = document.querySelector('body .o-barcode-input');
-        console.log(barcodeInput);
-
-        for (let i = 0; i < inputString.length; i++) {
-            const char = inputString.charAt(i);
-            const event = new KeyboardEvent('keydown', {
-                key: char,
-                bubbles: true,
-                cancelable: true
-            });
-            console.log(char);
-            document.body.dispatchEvent(event);
-        }
     }
     socket_connect(initialConnect = false) {
         if(!window.desktop_ws || !initialConnect) {
@@ -144,7 +129,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
             }
             window.desktop_ws.onclose = () => {
                 console.log("Disconnected, retrying...");
-                setTimeout(this.socket_connect, 1000);
+                setTimeout(window.socket_connect, 1000);
             }
         }
     }
@@ -161,6 +146,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
         if(this.payment_method.neat_worldpay_is_desktop_mode && !isMobile){
             window.is_printing_allowed_desktop_ws_map[this.payment_method.neat_worldpay_terminal_device_code] = this.payment_method.neat_worldpay_is_terminal_printer_communication_allowed
             if(this.payment_method.neat_worldpay_ws_url) {
+                window.socket_connect = this.socket_connect.bind(this)
                 window.desktop_ws_url = this.payment_method.neat_worldpay_ws_url
                 if(localStorage.getItem("neatworldpay_synced_device_code")) {
                     this.socket_connect(true)
