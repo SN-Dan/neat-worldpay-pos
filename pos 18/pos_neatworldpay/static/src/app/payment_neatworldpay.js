@@ -142,12 +142,15 @@ export class PaymentNeatWorldpay extends PaymentInterface {
         this.addCss()
         const device = window.navigator.userAgent
         const isMobile = device.includes("Android") || window.isNeatPOSAndroidApp
-        
-        if(this.payment_method.neat_worldpay_is_desktop_mode && !isMobile){
-            window.is_printing_allowed_desktop_ws_map[this.payment_method.neat_worldpay_terminal_device_code] = this.payment_method.neat_worldpay_is_terminal_printer_communication_allowed
-            if(this.payment_method.neat_worldpay_ws_url) {
+        var pm = this.payment_method
+        if(!pm) {
+            pm = this.payment_method_id
+        }
+        if(pm && pm.neat_worldpay_is_desktop_mode && !isMobile){
+            window.is_printing_allowed_desktop_ws_map[pm.neat_worldpay_terminal_device_code] = pm.neat_worldpay_is_terminal_printer_communication_allowed
+            if(pm.neat_worldpay_ws_url) {
                 window.socket_connect = this.socket_connect.bind(this)
-                window.desktop_ws_url = this.payment_method.neat_worldpay_ws_url
+                window.desktop_ws_url = pm.neat_worldpay_ws_url
                 if(localStorage.getItem("neatworldpay_synced_device_code")) {
                     this.socket_connect(true)
                 }
