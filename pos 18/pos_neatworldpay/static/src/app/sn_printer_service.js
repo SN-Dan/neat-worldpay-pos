@@ -2,8 +2,6 @@
 
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
-import { ConfirmPopup } from "@point_of_sale/app/utils/confirm_popup/confirm_popup";
-import { ErrorPopup } from "@point_of_sale/app/errors/popups/error_popup";
 import { PrinterService } from "@point_of_sale/app/printer/printer_service";
 import { htmlToCanvas } from "@point_of_sale/app/printer/render_service";
 
