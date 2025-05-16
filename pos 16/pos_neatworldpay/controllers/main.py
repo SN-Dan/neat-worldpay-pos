@@ -588,10 +588,10 @@ class PosWorldpayController(http.Controller):
             'status': 200, 
             'data': { 
                 'name': pos_payment_method[0].name, 
-                'url': pos_payment_method[0].company_id.website, 
-                'ws_certificate': pos_payment_method[0].neat_worldpay_ws_certificate, 
+                'url': pos_payment_method[0].company_id.website,
                 'ws_url': pos_payment_method[0].neat_worldpay_ws_url,
-                'is_desktop_mode': pos_payment_method[0].neat_worldpay_is_desktop_mode
+                'is_desktop_mode': pos_payment_method[0].neat_worldpay_is_desktop_mode,
+                'self_signed_certificates': pos_payment_method[0].neat_worldpay_self_signed_certificates
             } 
         })
 
