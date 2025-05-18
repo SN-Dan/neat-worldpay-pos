@@ -5,7 +5,7 @@ import { patch } from "@web/core/utils/patch";
 
 patch(EpsonPrinter.prototype, {
     async sendPrintingJob(img) {
-        if((window.isSNZettleiOSApp || window.isSNZettleAndroidApp ) && window.useSelfSignedCertificates) {
+        if(window.isNeatPOSAndroidApp && window.useSelfSignedCertificates) {
             const body = await new Promise((resolve) => {
                 window.selfSignedFetch(this.address, {
                     method: "POST",
