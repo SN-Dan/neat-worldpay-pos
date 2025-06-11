@@ -10,11 +10,11 @@ ST = Sofia
 L  = Sofia
 O  = NeatApps
 OU = Company
-CN = 192.168.1.4
+CN = 192.168.0.210
 
 [v3_req]
 subjectAltName = @alt_names
 
 [alt_names]
-IP.1 = 192.168.1.4
+IP.1 = 192.168.0.210
 DNS.1 = localhost
