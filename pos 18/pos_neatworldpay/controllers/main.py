@@ -350,6 +350,22 @@ class PosWorldpayController(http.Controller):
                 return json.dumps({ 'status': 200, 'data': { 'transaction_id': read_request['transaction_id'], 'amount': read_request['amount'], 'tokens': tokens } })
             time.sleep(1)
 
+    @http.route('/pos_worldpay/notify_payment_request',type='http', auth='public', methods=['POST'], csrf=False, cors='*')
+    def notify_payment_request(self):
+        r = json.loads(http.request.httprequest.data)
+        refresh_token = r['refresh_token']
+        res = self.auth_refresh_token(refresh_token)
+        if not res['authenticated']:
+            return json.dumps({ 'status': 401 })
+
+        current_datetime = datetime.utcnow()
+        two_minutes_ago = current_datetime - timeout_delta
+        current_payment_requests = http.request.env['neat.worldpay.payment.request'].sudo().search(
+            [('terminal_id', '=', res['device_code']), ('status', '=', 'pending'),
+                ('start_date', '>=', two_minutes_ago)])
+                
+        return json.dumps({ 'status': 200, 'data': { 'payment_request_found': len(current_payment_requests) > 0 } })
+
     @http.route('/pos_worldpay/complete',type='http', auth='public', methods=['POST'], csrf=False, cors='*')
     def complete(self):
         r = json.loads(http.request.httprequest.data)
