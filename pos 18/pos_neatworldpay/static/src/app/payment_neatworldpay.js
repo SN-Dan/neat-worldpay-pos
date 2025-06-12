@@ -146,7 +146,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
         if(!pm) {
             pm = this.payment_method_id
         }
-        if(pm && pm.neat_worldpay_is_desktop_mode && !isMobile){
+        if(pm && pm.neat_worldpay_is_desktop_mode && pm.neat_worldpay_is_local_ws_server && !isMobile){
             window.is_printing_allowed_desktop_ws_map[pm.neat_worldpay_terminal_device_code] = pm.neat_worldpay_is_terminal_printer_communication_allowed
             if(pm.neat_worldpay_ws_url) {
                 window.socket_connect = this.socket_connect.bind(this)
@@ -227,7 +227,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
                     window.open("app://neat-worldpay-payment-android?paymentType=0&redirectUrl=" + encodedURL);
                 }
             }
-            else if(result && result.status === 201 && data.PaymentMethod.neat_worldpay_is_desktop_mode && data.PaymentMethod.neat_worldpay_ws_url && !isMobile && data.PaymentMethod.neat_worldpay_terminal_device_code === localStorage.getItem("neatworldpay_synced_device_code")) {
+            else if(result && result.status === 201 && data.PaymentMethod.neat_worldpay_is_desktop_mode && data.PaymentMethod.neat_worldpay_is_local_ws_server && data.PaymentMethod.neat_worldpay_ws_url && !isMobile && data.PaymentMethod.neat_worldpay_terminal_device_code === localStorage.getItem("neatworldpay_synced_device_code")) {
                 window.desktop_ws.send(JSON.stringify({ type: "message", msgType: "payment" }));
             }
             line.set_payment_status('waitingCard');

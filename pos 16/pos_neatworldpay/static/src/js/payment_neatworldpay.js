@@ -147,7 +147,7 @@ odoo.define('pos_neatworldpay.payment', function(require) {
             const device = window.navigator.userAgent
             const isMobile = device.includes("Android") || window.isNeatPOSAndroidApp
             
-            if(this.payment_method.neat_worldpay_is_desktop_mode && !isMobile){
+            if(this.payment_method.neat_worldpay_is_desktop_mode && this.payment_method.neat_worldpay_is_local_ws_server && !isMobile){
                 window.is_printing_allowed_desktop_ws_map[this.payment_method.neat_worldpay_terminal_device_code] = this.payment_method.neat_worldpay_is_terminal_printer_communication_allowed
                 if(this.payment_method.neat_worldpay_ws_url) {
                     window.desktop_ws_url = this.payment_method.neat_worldpay_ws_url
@@ -239,7 +239,7 @@ odoo.define('pos_neatworldpay.payment', function(require) {
                         window.open("app://neat-worldpay-payment-android?paymentType=0&redirectUrl=" + encodedURL);
                     }
                 }
-                else if(result && result.status === 201 && data.PaymentMethod.neat_worldpay_is_desktop_mode && data.PaymentMethod.neat_worldpay_ws_url && !isMobile && data.PaymentMethod.neat_worldpay_terminal_device_code === localStorage.getItem("neatworldpay_synced_device_code")) {
+                else if(result && result.status === 201 && data.PaymentMethod.neat_worldpay_is_desktop_mode && data.PaymentMethod.neat_worldpay_is_local_ws_server && data.PaymentMethod.neat_worldpay_ws_url && !isMobile && data.PaymentMethod.neat_worldpay_terminal_device_code === localStorage.getItem("neatworldpay_synced_device_code")) {
                     window.desktop_ws.send(JSON.stringify({ type: "message", msgType: "payment" }));
                 }
                 line.set_payment_status('waitingCard');

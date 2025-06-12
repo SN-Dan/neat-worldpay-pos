@@ -11,5 +11,6 @@ class PosSession(models.Model):
         result['search_params']['fields'].append('neat_worldpay_is_terminal_printer_communication_allowed')
         result['search_params']['fields'].append('neat_worldpay_ws_url')
         result['search_params']['fields'].append('neat_worldpay_is_desktop_mode')
+        result['search_params']['fields'].append('neat_worldpay_is_local_ws_server')
         result['search_params']['fields'].append('neat_worldpay_device_type')
         return result
