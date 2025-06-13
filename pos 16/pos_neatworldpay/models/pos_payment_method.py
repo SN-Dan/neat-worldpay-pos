@@ -50,6 +50,13 @@ class PosPaymentMethod(models.Model):
         help='Indicates what operating system the terminal will use. Example: If the Neat POS Suite App is installed on an Android then Android should be selected here.'
     )
 
+    neat_worldpay_is_readonly = fields.Boolean(compute="_compute_neat_worldpay_is_readonly")
+
+    @api.depends('neat_worldpay_is_local_ws_server', 'neat_worldpay_is_desktop_mode')
+    def _compute_neat_worldpay_is_readonly(self):
+        for rec in self:
+            rec.neat_worldpay_is_readonly = not rec.neat_worldpay_is_local_ws_server or not rec.neat_worldpay_is_desktop_mode
+
     @api.model
     def _get_user_groups(self):
         ir_model_data = self.env['ir.model.data']
