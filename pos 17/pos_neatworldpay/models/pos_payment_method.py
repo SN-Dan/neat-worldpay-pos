@@ -66,8 +66,9 @@ class PosPaymentMethod(models.Model):
     def create(self, values):
         if values['use_payment_terminal'] == 'neatworldpay':
             if values['neat_worldpay_terminal_master_pwd_mock'] is False or values['neat_worldpay_terminal_master_pwd_mock'] == '' or len(
-                values['neat_worldpay_terminal_master_pwd_mock']) < 6:
-                raise ValidationError("Master Password must have at least 6 characters.")
+                values['neat_worldpay_terminal_master_pwd_mock']) < 4 or len(
+                values['neat_worldpay_terminal_master_pwd_mock']) > 8:
+                raise ValidationError("Master Password must have between 4 and 8 characters.")
             values['neat_worldpay_terminal_pass_uuid'] = self.generate_password_uuid()
             hashed_password = generate_password_hash(values['neat_worldpay_terminal_master_pwd_mock'])
             values['neat_worldpay_terminal_master_pwd'] = hashed_password
@@ -81,8 +82,9 @@ class PosPaymentMethod(models.Model):
         if 'neat_worldpay_terminal_master_pwd_mock' in values:
             if values['neat_worldpay_terminal_master_pwd_mock'] is False or values[
                 'neat_worldpay_terminal_master_pwd_mock'] == '' or len(
-                    values['neat_worldpay_terminal_master_pwd_mock']) < 6:
-                raise ValidationError("Master Password must have at least 6 characters.")
+                values['neat_worldpay_terminal_master_pwd_mock']) < 4 or len(
+                values['neat_worldpay_terminal_master_pwd_mock']) > 8:
+                raise ValidationError("Master Password must have between 4 and 8 characters.")
             values['neat_worldpay_terminal_pass_uuid'] = self.generate_password_uuid()
             hashed_password = generate_password_hash(values['neat_worldpay_terminal_master_pwd_mock'])
             values['neat_worldpay_terminal_master_pwd'] = hashed_password
