@@ -17,11 +17,13 @@ _logger = logging.getLogger(__name__)
 
 class PosWorldpayController(http.Controller):
     def get_user_name(self, user_id):
-        user = request.env['res.users'].browse(user_id)
-        if user:
-            return user.name
-
-        return None
+        try:
+            user = request.env['res.users'].browse(user_id)
+            if user:
+                return user.name
+            return "Unknown"
+        except Exception:
+            return "Unknown"
     def get_refunds(self, refunded_order_line_id, amt):
         pos_orders = http.request.env['pos.order'].sudo().search([
             ('lines', 'in', refunded_order_line_id)
