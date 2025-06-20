@@ -192,6 +192,8 @@ class PosWorldpayController(http.Controller):
             amount = int(decimal_amount)
         if amount == 0:
             return { 'status': 400 }
+        log_is_refund = refunded_order_line_id is not None
+        _logger.info("create_payment_request called for order_id: " + order_id + " amount: " + amount + " is_refund: " + log_is_refund)
         current_datetime = datetime.utcnow()
         two_minutes_ago = current_datetime - timeout_delta
         current_payment_requests_ref = http.request.env['neat.worldpay.payment.request'].search(
@@ -212,6 +214,7 @@ class PosWorldpayController(http.Controller):
                     return {'status': 403}
                 current_payment_request_ref.write({'status': 'cancelled'})
             transaction_id = uuid.uuid4()
+            _logger.info("cancel_payment_request order_id: " + order_id + " generated transaction_id: " + transaction_id)
             payment_request = {
                 'terminal_id': terminal_id,
                 'order_id': order_id,
@@ -239,6 +242,7 @@ class PosWorldpayController(http.Controller):
     @http.route('/pos_worldpay/cancel_payment_request', type='json', auth='user', methods=['POST'])
     def cancel_payment_request(self, terminal_id, order_id):
         current_datetime = datetime.utcnow()
+        _logger.info("cancel_payment_request called for order_id: %s", order_id)
         two_minutes_ago = current_datetime - timeout_delta + timedelta(seconds=5)
         current_payment_requests = http.request.env['neat.worldpay.payment.request'].search(
             [('terminal_id', '=', terminal_id), ('order_id', '=', order_id), ('status', '=', 'pending'), ('start_date', '>=', two_minutes_ago)])
@@ -258,6 +262,7 @@ class PosWorldpayController(http.Controller):
     def check_request(self, terminal_id, transaction_id):
         current_datetime = datetime.utcnow()
         two_minutes_ago = current_datetime - timeout_delta
+        _logger.info("check_request called for transaction_id: " + transaction_id)
         current_payment_requests = http.request.env['neat.worldpay.payment.request'].search(
             [('transaction_id', '=', transaction_id), ('terminal_id', '=', terminal_id), ('status', 'not like', 'processed_%'), ('start_date', '>=', two_minutes_ago)], limit=1, order='start_date desc')
         if len(current_payment_requests) == 0:
@@ -279,6 +284,7 @@ class PosWorldpayController(http.Controller):
 
     @http.route('/pos_worldpay/request_processed', type='json', auth='user', methods=['POST'])
     def request_processed(self, terminal_id, transaction_id):
+        _logger.info("request_processed called for transaction_id: " + transaction_id)
         current_payment_requests = http.request.env['neat.worldpay.payment.request'].search(
             [('transaction_id', '=', transaction_id), ('terminal_id', '=', terminal_id)],
             limit=1, order='start_date desc')
@@ -342,6 +348,7 @@ class PosWorldpayController(http.Controller):
                     if len(refunds) == 0:
                         return json.dumps({ 'status': 404 })
                     current_payment_requests[0].write({'start_date': datetime.utcnow() })
+                    _logger.info("poll_payment_request found payment for transaction_id: " + transaction_id)
                     return json.dumps({'status': 200, 'data': {'transaction_id': read_request['transaction_id'],
                                                                'refunds': refunds,
                                                                'amount': read_request['amount'],
@@ -349,7 +356,7 @@ class PosWorldpayController(http.Controller):
                 current_payment_requests[0].write({'start_date': datetime.utcnow()})
                 return json.dumps({ 'status': 200, 'data': { 'transaction_id': read_request['transaction_id'], 'amount': read_request['amount'], 'tokens': tokens } })
             time.sleep(1)
-    
+
     @http.route('/pos_worldpay/notify_payment_request',type='http', auth='public', methods=['POST'], csrf=False, cors='*')
     def notify_payment_request(self):
         r = json.loads(http.request.httprequest.data)
@@ -375,6 +382,8 @@ class PosWorldpayController(http.Controller):
         refunds = r.get('refunds', None)
         uti = r.get('uti', None)
         rrn = r.get('rrn', None)
+        logs = r.get('logs', None)
+
 
         if status != 'done' and status != 'failed' and status != 'cancelled' and status != 'refunded' and status != 'resent_done' and status != 'resent_refunded':
             return json.dumps({ 'status': 400 })
@@ -383,6 +392,7 @@ class PosWorldpayController(http.Controller):
             card_type = r['card_type']
         cardholder_name = "Not Specified"
         transaction_id = r['transaction_id']
+        _logger.info("complete payment for transaction_id: " + transaction_id + " status: " + status + " logs: " + logs)
         res = self.auth_payment_token(payment_token, transaction_id, amt, False)
         if not res['authenticated']:
             return json.dumps({'status': 401})
@@ -604,14 +614,10 @@ class PosWorldpayController(http.Controller):
             'status': 200, 
             'data': { 
                 'name': pos_payment_method[0].name, 
-                'url': pos_payment_method[0].company_id.website, 
+                'url': pos_payment_method[0].company_id.website,
                 'ws_url': pos_payment_method[0].neat_worldpay_ws_url,
                 'is_desktop_mode': pos_payment_method[0].neat_worldpay_is_desktop_mode,
                 'is_local_ws_server': pos_payment_method[0].neat_worldpay_is_local_ws_server,
                 'self_signed_certificates': pos_payment_method[0].neat_worldpay_self_signed_certificates
             } 
         })
-
-
-
-
