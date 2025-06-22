@@ -328,6 +328,23 @@ class PosWorldpayController(http.Controller):
             license_key = user_settings[0]['license_key']
         return json.dumps({'status': 200, 'data': { 'license_key': license_key }})
 
+    @http.route('/pos_worldpay/log_message',type='http', auth='public', methods=['POST'], csrf=False, cors='*')
+    def log_message(self):
+        r = json.loads(http.request.httprequest.data)
+        refresh_token = r['refresh_token']
+        res = self.auth_refresh_token(refresh_token)
+        if not res['authenticated']:
+            return json.dumps({'status': 401})
+
+        log_type = r['type']
+        message = r['message']
+
+        if log_type == 'info' or log_type == 'error':
+            _logger.info("Worldpay POS " + res['device_code'] + " Logged(" + str(log_type) + "): " + str(message))
+            return json.dumps({ 'status': 200 })
+
+        return json.dumps({ 'status': 400 })
+
     @http.route('/pos_worldpay/poll_payment_request',type='http', auth='public', methods=['POST'], csrf=False, cors='*')
     def poll_payment_request(self):
         r = json.loads(http.request.httprequest.data)
@@ -581,7 +598,12 @@ class PosWorldpayController(http.Controller):
             if read_request['amount'] != amt:
                 return json.dumps({ 'status': 403 })
             dbname = http.request.httprequest.environ.get('HTTP_DBNAME')
-            user_id = http.request.env['res.users'].sudo().authenticate(dbname, username, password, http.request.env.context)
+            user_id = http.request.env['res.users'].sudo().with_context(http.request.env.context).authenticate(dbname, {'login': username, 'password': password, 'type': 'password'}, { 'interactive': False })
+            _logger.info('user_id from override: %s', user_id)
+            if user_id:
+                user_id = user_id['uid']
+            else:
+                return json.dumps({'status': 403})
             user = http.request.env['res.users'].sudo().browse(user_id)
             if user:
                 payment_methods = http.request.env['pos.payment.method'].sudo().search(
