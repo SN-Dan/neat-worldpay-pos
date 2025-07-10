@@ -1,5 +1,6 @@
 # coding: utf-8
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
+# Original Author: Daniel Stoynev
+# Copyright (c) 2025 SNS Software Ltd. All rights reserved.
 
 from . import pos_payment_method
 from . import pos_session

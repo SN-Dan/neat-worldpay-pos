@@ -1,4 +1,6 @@
 # coding: utf-8
+# Original Author: Daniel Stoynev
+# Copyright (c) 2025 SNS Software Ltd. All rights reserved.
 import logging
 import pprint
 import json

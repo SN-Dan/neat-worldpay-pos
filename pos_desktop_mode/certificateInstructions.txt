@@ -1,7 +1,0 @@
-# Generate private key
-openssl genrsa -out private-key.pem 2048
-
-# Generate certificate with SAN using the config
-openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
-  -keyout private-key.pem -out certificate.pem \
-  -config san.cnf -extensions v3_req

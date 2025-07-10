@@ -1,3 +1,5 @@
+# Original Author: Daniel Stoynev
+# Copyright (c) 2025 SNS Software Ltd. All rights reserved.
 import logging
 from odoo import fields, models, api, _
 from cryptography.fernet import Fernet
