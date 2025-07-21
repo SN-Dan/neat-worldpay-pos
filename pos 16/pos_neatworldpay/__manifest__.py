@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # Original Author: Daniel Stoynev
 # Copyright (c) 2025 SNS Software Ltd. All rights reserved.
+# This module extends Odoo's payment framework.
+# Odoo is a trademark of Odoo S.A.
 {
     'name': 'POS Worldpay',
     'version': '1.1',
@@ -31,5 +33,5 @@
     'installable': True,
     'application': True,
     'auto_install': False,
-    'license': 'Other proprietary',
+    'license': 'LGPL-3',
 }
