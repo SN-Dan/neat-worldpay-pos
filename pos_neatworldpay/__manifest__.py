@@ -21,7 +21,7 @@
     },
     'depends': ['point_of_sale'],
     'qweb': [],
-    'images': ['static/description/landscape Neat POS.gif'],
+    'images': ['static/description/main.gif'],
     'assets': {
         'point_of_sale.assets': [
             'pos_neatworldpay/static/src/js/models.js',
