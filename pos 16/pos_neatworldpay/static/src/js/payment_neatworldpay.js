@@ -263,22 +263,37 @@ odoo.define('pos_neatworldpay.payment', function(require) {
                                     }
                                 })
                                 if(processed_result && processed_result.status == 200) {
-                                    line.transaction_id = res.data.transaction_id;
-                                    line.card_type = res.data.card_type;
-                                    line.cardholder_name = res.data.cardholder_name
-                                    if(res.data.is_refund && line.amount !== res.data.refunded_amount) {
-                                        if(res.data.refunded_amount < 0) {
-                                            line.amount = res.data.refunded_amount
+                                    try {
+                                        line.transaction_id = res.data.transaction_id;
+                                        line.card_type = res.data.card_type;
+                                        line.cardholder_name = res.data.cardholder_name
+                                        if(res.data.is_refund && line.amount !== res.data.refunded_amount) {
+                                            if(res.data.refunded_amount < 0) {
+                                                line.amount = res.data.refunded_amount
+                                            }
+                                            else {
+                                                line.amount = -1 * res.data.refunded_amount
+                                            }
                                         }
                                         else {
-                                            line.amount = -1 * res.data.refunded_amount
+                                            line.amount = res.data.transaction_amount
                                         }
+                                        line.set_payment_status('done');
+                                        return true
                                     }
-                                    else {
-                                        line.amount = res.data.transaction_amount
+                                    catch(e) {
+                                        console.log(e)
+                                        await rpc.query({
+                                            route: '/pos_worldpay/log_message_ui',
+                                            params: {
+                                                terminal_id: terminalId,
+                                                transaction_id: res.data.transaction_id,
+                                                type: 'error',
+                                                message: 'Error setting payment status: ' + e.message
+                                            }
+                                        })
+                                        return false;
                                     }
-                                    line.set_payment_status('done');
-                                    return true
                                 }
                             }
                             else if(res.data.status !== 'pending') {
