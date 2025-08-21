@@ -4,4 +4,4 @@
 # Odoo is a trademark of Odoo S.A.
 from datetime import timedelta
 
-timeout_delta = timedelta(minutes=3, seconds=0)
+timeout_delta = timedelta(minutes=4, seconds=0)
