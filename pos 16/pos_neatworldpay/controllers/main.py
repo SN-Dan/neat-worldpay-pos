@@ -670,21 +670,15 @@ class PosWorldpayController(http.Controller):
             } 
         })
 
-    @http.route('/pos_worldpay/today_done', type='http', auth='public', methods=['POST'], csrf=False, cors='*')
-    def today_done(self):
-        r = json.loads(http.request.httprequest.data)
-        refresh_token = r.get('refresh_token')
-        res = self.auth_refresh_token(refresh_token) if refresh_token else { 'authenticated': False }
-        if not res['authenticated']:
-            return json.dumps({ 'status': 401 })
-
+    @http.route('/pos_worldpay/today_done', type='json', auth='user', methods=['POST'])
+    def today_done(self, terminal_id):
         # Build start/end of today in UTC
         now_utc = datetime.utcnow()
         start_of_day = datetime(year=now_utc.year, month=now_utc.month, day=now_utc.day)
         end_of_day = start_of_day + timedelta(days=1) - timedelta(microseconds=1)
 
         domain = [
-            ('terminal_id', '=', res['device_code']),
+            ('terminal_id', '=', terminal_id),
             ('status', 'in', ['done', 'resent_done']),
             ('start_date', '>=', start_of_day),
             ('start_date', '<=', end_of_day)
@@ -699,7 +693,7 @@ class PosWorldpayController(http.Controller):
             create_date = row['create_date'].strftime(date_format)
             result.append({ **row, 'create_date': create_date })
 
-        return json.dumps({ 'status': 200, 'data': { 'results': result } })
+        return { 'status': 200, 'data': { 'results': result } }
 
 
 
