@@ -676,7 +676,7 @@ class PosWorldpayController(http.Controller):
         })
 
     @http.route('/pos_worldpay/today_done', type='json', auth='user', methods=['POST'])
-    def today_done(self, terminal_id):
+    def today_done(self):
         # Build start/end of today in UTC
         now_utc = datetime.utcnow()
         start_of_day = datetime(year=now_utc.year, month=now_utc.month, day=now_utc.day)
