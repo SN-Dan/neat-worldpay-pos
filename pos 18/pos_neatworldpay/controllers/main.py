@@ -683,7 +683,6 @@ class PosWorldpayController(http.Controller):
         end_of_day = start_of_day + timedelta(days=1) - timedelta(microseconds=1)
 
         domain = [
-            ('terminal_id', '=', terminal_id),
             ('status', 'in', ['done', 'resent_done']),
             ('start_date', '>=', start_of_day),
             ('start_date', '<=', end_of_day)
