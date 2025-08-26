@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="point_of_sale.PaymentScreenPaymentLines" t-inherit-mode="extension" owl="1">
+        <!-- Add resync button above selected payment line when Send or Retry button is present -->
+        <xpath expr="//div[hasclass('paymentline') and hasclass('selected')]" position="before">
+            <t t-if="this.isNeatWorldpayPayment(line) and (line.payment_status == 'pending' or line.payment_status == 'retry')">
+                <div class="button resync_neatworldpay" 
+                     title="Resync with Today's Done Transactions" 
+                     t-on-click="() => this.onResyncNeatWorldpay(line)">
+                    Resync
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>

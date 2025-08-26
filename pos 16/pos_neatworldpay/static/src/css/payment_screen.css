@@ -1,0 +1,33 @@
+/* Retry button styling for Neat WorldPay payment methods */
+.retry-button-container {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+}
+
+.retry-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: background-color 0.2s ease;
+}
+
+.retry-button:hover {
+    background-color: #c82333;
+}
+
+.retry-button:active {
+    background-color: #bd2130;
+}
+
+/* Ensure payment method buttons have relative positioning for absolute positioning of retry button */
+.paymentmethod {
+    position: relative;
+}

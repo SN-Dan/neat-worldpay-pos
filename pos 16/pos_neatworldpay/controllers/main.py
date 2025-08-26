@@ -7,6 +7,7 @@ import logging
 import pprint
 import json
 import uuid
+import pytz
 from odoo import fields, http
 from odoo.http import request
 from datetime import datetime, timedelta
@@ -678,19 +679,33 @@ class PosWorldpayController(http.Controller):
         end_of_day = start_of_day + timedelta(days=1) - timedelta(microseconds=1)
 
         domain = [
-            ('status', 'in', ['done', 'resent_done']),
+            ('status', 'in', ['done', 'resent_done', 'processed_done', 'processed_resent_done', 'refunded', 'resent_refunded', 'processed_refunded', 'processed_resent_refunded']),
             ('start_date', '>=', start_of_day),
             ('start_date', '<=', end_of_day)
         ]
         records = http.request.env['neat.worldpay.payment.request'].sudo().search(domain, order='start_date desc')
-        fields_to_read = ['create_date', 'order_id', 'transaction_id', 'amount', 'status', 'card_type']
+        fields_to_read = ['start_date', 'order_id', 'transaction_id', 'amount', 'status', 'card_type']
         rows = records.read(fields_to_read)
-        # Format create_date similarly to payment_history
-        date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+        
+        # Get user's timezone
+        user_tz = http.request.env.user.tz or 'UTC'
+        
         result = []
         for row in rows:
-            create_date = row['create_date'].strftime(date_format)
-            result.append({ **row, 'create_date': create_date })
+            # Convert to user timezone and format in human-readable format
+            start_date_utc = row['start_date']
+            start_date_user_tz = start_date_utc.astimezone(pytz.timezone(user_tz))
+            start_date_formatted = start_date_user_tz.strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Convert amount from cents to decimal (e.g., 3750 -> 37.50)
+            amount_cents = row['amount'] or 0
+            amount_decimal = Decimal(str(amount_cents)) / Decimal('100')
+            
+            result.append({ 
+                **row, 
+                'start_date': start_date_formatted,
+                'amount': float(amount_decimal)
+            })
 
         return { 'status': 200, 'data': { 'results': result } }
 

@@ -1,0 +1,184 @@
+/* Resync button styling for Neat WorldPay payment methods */
+.resync_neatworldpay {
+    background-color: #17a2b8 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s ease !important;
+    height: 15px !important;
+    width: 40px;
+}
+
+.resync_neatworldpay:hover {
+    background-color: #138496 !important;
+}
+
+.resync_neatworldpay:active {
+    background-color: #117a8b !important;
+}
+
+/* Modal styling for resync transactions */
+.resync-modal-content {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.transaction-list {
+    margin-top: 10px;
+}
+
+.transaction-item {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.transaction-item:hover {
+    background-color: #f8f9fa;
+}
+
+.transaction-item.selected {
+    background-color: #007bff;
+    color: white;
+}
+
+.transaction-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.transaction-amount {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.transaction-time {
+    font-size: 12px;
+    color: #666;
+}
+
+.transaction-id {
+    font-size: 11px;
+    color: #999;
+}
+
+.transaction-item.selected .transaction-time,
+.transaction-item.selected .transaction-id {
+    color: #ccc;
+}
+
+/* Custom resync modal styling */
+.resync-modal {
+    display: inline-block;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.resync-modal-content {
+    background-color: #fff;
+    border-radius: 8px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.resync-modal-text {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.transaction-list-container {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 400px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.resync-modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.resync-modal-button {
+    flex: 1;
+    height: 45px;
+    cursor: pointer;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.resync-modal-cancel {
+    background-color: #6c757d;
+    color: white !important;
+}
+
+.resync-modal-cancel:hover {
+    background-color: #545b62;
+}
+
+.resync-modal-confirm {
+    background-color: #007bff;
+    color: white !important;
+}
+
+.resync-modal-confirm:hover {
+    background-color: #0056b3;
+}
+
+.resync-modal-confirm:disabled {
+    background-color: #ccc;
+    color: #666 !important;
+    cursor: not-allowed;
+}
+
+/* Load All button styling */
+.resync-modal-load-all {
+    background-color: #28a745 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s ease !important;
+    margin: 10px 0 !important;
+    width: 100% !important;
+}
+
+.resync-modal-load-all:hover {
+    background-color: #218838 !important;
+}
+
+.resync-modal-load-all:active {
+    background-color: #1e7e34 !important;
+}

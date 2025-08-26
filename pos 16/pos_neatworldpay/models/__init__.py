@@ -9,3 +9,4 @@ from . import pos_session
 from . import neat_worldpay_payment_request
 from . import neat_worldpay_security
 from . import neat_worldpay_settings
+from . import pos_order
