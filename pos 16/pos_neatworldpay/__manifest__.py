@@ -10,6 +10,7 @@
     'sequence': 6,
     'summary': 'Integrate your POS with a Worldpay payment terminal',
     'description': 'Pay using Odoo and Worldpay - Any Place, Any Time',
+    'website': 'https://www.sns-software.com',
     'author': 'Neat Apps',
     'maintainer': 'Neat Apps',
     'data': [
