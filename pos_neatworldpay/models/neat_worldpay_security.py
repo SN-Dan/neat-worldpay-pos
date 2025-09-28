@@ -14,11 +14,17 @@ class PosPaymentMethod(models.Model):
 
     neat_worldpay_secret_key = fields.Char('Secret Key')
 
-    def create(self, values):
-        fernet_key = Fernet.generate_key()
-        fernet_key_string = fernet_key.decode()
-        values['neat_worldpay_secret_key'] = fernet_key_string
-        return super(PosPaymentMethod, self).create(values)
+    def create(self, values_list):
+        # Handle both single dict and list of dicts for Odoo 19 compatibility
+        if isinstance(values_list, dict):
+            values_list = [values_list]
+        
+        for values in values_list:
+            fernet_key = Fernet.generate_key()
+            fernet_key_string = fernet_key.decode()
+            values['neat_worldpay_secret_key'] = fernet_key_string
+        
+        return super(PosPaymentMethod, self).create(values_list)
 
 
     def write(self, values):

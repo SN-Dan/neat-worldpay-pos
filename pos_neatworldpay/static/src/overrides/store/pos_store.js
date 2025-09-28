@@ -1,13 +1,13 @@
 /** @odoo-module */
 
-import { PosStore } from "@point_of_sale/app/store/pos_store";
+import { PosStore } from "@point_of_sale/app/services/pos_store";
 import { patch } from "@web/core/utils/patch";
 
 patch(PosStore.prototype, {
     async syncAllOrders(options) {
         const maxRetries = 3;
         const retryDelay = 2000; // 2 seconds
-        debugger
+        
         console.log('pos_neatworldpay: syncAllOrders called');
         
         const attemptSync = async (attemptNumber) => {

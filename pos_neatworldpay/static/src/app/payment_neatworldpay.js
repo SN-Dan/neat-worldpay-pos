@@ -1,7 +1,7 @@
 /** @odoo-module */
 
 import { _t } from "@web/core/l10n/translation";
-import { PaymentInterface } from "@point_of_sale/app/payment/payment_interface";
+import { PaymentInterface } from "@point_of_sale/app/utils/payment/payment_interface";
 
 export class PaymentNeatWorldpay extends PaymentInterface {
     sleep(ms) {
@@ -163,22 +163,22 @@ export class PaymentNeatWorldpay extends PaymentInterface {
     /**
      * @override
     */
-    async send_payment_request (cid) {
+    async sendPaymentRequest (cid) {
         try {
-            super.send_payment_request(...arguments);
+            super.sendPaymentRequest(...arguments);
             const line = this._get_payment_line();
-            const order = this.pos.get_order();
+            const order = this.pos.getOrder();
             const data = this._terminal_pay_data();
             const terminalId = data.PaymentMethod.neat_worldpay_terminal_device_code
             const refunded_order_line_ids = []
-
+            
             for(let i = 0; i < order.lines.length; i++) {
                 var orderline = order.lines[i]
                 if(orderline.refunded_orderline_id) {
                     refunded_order_line_ids.push(orderline.refunded_orderline_id.id)
                 }
             }
-
+            
             if(refunded_order_line_ids.length > 1) {
                 try {
                     const iosr = await this.env.services.orm.rpc('/pos_worldpay/is_order_the_same', {
@@ -186,13 +186,13 @@ export class PaymentNeatWorldpay extends PaymentInterface {
                     })
 
                     if(!iosr || !iosr.data || !iosr.data.is_order_the_same) {
-                        line.set_payment_status('retry');
+                        line.setPaymentStatus('retry');
                         throw new Error('Cannot have multiple refunds in an order.');
                         return
                     }
                 }
                 catch(e) {
-                    line.set_payment_status('retry');
+                    line.setPaymentStatus('retry');
                     throw new Error('Cannot have multiple refunds in an order.');
                     return
                 }
@@ -212,7 +212,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
             }
             const result = await this.env.services.orm.rpc('/pos_worldpay/create_payment_request', params)
             if(!result || result.status === 403 || result.status === 400) {
-                line.set_payment_status('retry');
+                line.setPaymentStatus('retry');
                 return false
             }
             const device = window.navigator.userAgent
@@ -230,7 +230,8 @@ export class PaymentNeatWorldpay extends PaymentInterface {
             else if(result && result.status === 201 && data.PaymentMethod.neat_worldpay_is_desktop_mode && data.PaymentMethod.neat_worldpay_is_local_ws_server && data.PaymentMethod.neat_worldpay_ws_url && !isMobile && data.PaymentMethod.neat_worldpay_terminal_device_code === localStorage.getItem("neatworldpay_synced_device_code")) {
                 window.desktop_ws.send(JSON.stringify({ type: "message", msgType: "payment" }));
             }
-            line.set_payment_status('waitingCard');
+            
+            line.setPaymentStatus('waitingCard');
             while(true) {
                 try {
                     const res = await this.env.services.orm.rpc('/pos_worldpay/check_request', {
@@ -260,7 +261,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
                                     else {
                                         line.amount = res.data.transaction_amount
                                     }
-                                    line.set_payment_status('done');
+                                    line.setPaymentStatus('done');
                                     return true
                                 }
                                 catch(e) {
@@ -276,12 +277,12 @@ export class PaymentNeatWorldpay extends PaymentInterface {
                             }
                         }
                         else if(res.data.status !== 'pending') {
-                            line.set_payment_status('retry');
+                            line.setPaymentStatus('retry');
                             return false
                         }
                     }
                     else {
-                        line.set_payment_status('retry');
+                        line.setPaymentStatus('retry');
                         return false
                     }
                 }
@@ -294,16 +295,16 @@ export class PaymentNeatWorldpay extends PaymentInterface {
         }
         catch(e) {
             const line = this._get_payment_line();
-            line.set_payment_status('retry');
+            line.setPaymentStatus('retry');
             return false
         }
     }
     /**
      * @override
     */
-    async send_payment_cancel() {
+    async sendPaymentCancel(order, uuid) {
         try {
-            super.send_payment_cancel(...arguments);
+            super.sendPaymentCancel(...arguments);
             console.log('cancel')
             const line = this._get_payment_line();
             const data = this._terminal_pay_data();
@@ -319,14 +320,11 @@ export class PaymentNeatWorldpay extends PaymentInterface {
         return true;
     }
     _get_payment_line() {
-        var line = this.pos.get_order().selected_paymentline
-        if(!line) {
-            line = this.pos.get_order().get_selected_paymentline();
-        }
+        var line = this.pos.getOrder().getSelectedPaymentline()
         return line
     }
     _terminal_pay_data() {
-          const order = this.pos.get_order();
+          const order = this.pos.getOrder();
           const line = this._get_payment_line();
           var orderId = order.uid
           if(!orderId) {

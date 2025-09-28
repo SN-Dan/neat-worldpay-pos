@@ -11,5 +11,12 @@ class NeatWorldpaySettings(models.Model):
     _name = 'neat.worldpay.settings'
     _description = 'NEAT Worldpay User Settings'
 
+    @api.model
+    def create(self, vals):
+        # Handle both single dict and list of dicts for Odoo 19 compatibility
+        if isinstance(vals, dict):
+            vals = [vals]
+        return super().create(vals)
+
     promotion_displayed = fields.Boolean('Promotion Displayed')
     license_key = fields.Text('License Key', required=False, readonly=False, store=True)
