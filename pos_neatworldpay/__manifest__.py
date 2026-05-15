@@ -10,8 +10,8 @@
     'sequence': 6,
     'summary': 'Worldpay PoS Payment Terminal Official Integration',
     'description': 'Pay using Odoo and Worldpay - Any Place, Any Time',
-    'author': 'Neat Apps',
-    'maintainer': 'Neat Apps',
+    'author': 'SNS Software LTD',
+    'maintainer': 'SNS Software LTD',
     'data': [
         'security/ir.model.access.csv',
         'views/pos_payment_method_views.xml',
