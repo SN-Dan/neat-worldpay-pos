@@ -20,6 +20,15 @@ _logger = logging.getLogger(__name__)
 
 
 class PosWorldpayController(http.Controller):
+    def _get_active_payment_requests(self, terminal_id, order_id):
+        current_datetime = datetime.utcnow()
+        two_minutes_ago = current_datetime - timeout_delta + timedelta(seconds=5)
+        current_payment_requests = http.request.env['neat.worldpay.payment.request'].search(
+            [('terminal_id', '=', terminal_id), ('order_id', '=', order_id), ('status', '=', 'pending'), ('start_date', '>=', two_minutes_ago)])
+        current_resent_requests = http.request.env['neat.worldpay.payment.request'].search(
+            [('terminal_id', '=', terminal_id), ('status', 'like', 'resent_%'), ('status', 'not like', 'processed_%'), ('start_date', '>=', two_minutes_ago)])
+        return current_payment_requests, current_resent_requests
+
     def get_user_name(self, user_id):
         try:
             user = request.env['res.users'].browse(user_id)
@@ -251,15 +260,10 @@ class PosWorldpayController(http.Controller):
 
     @http.route('/pos_worldpay/cancel_payment_request', type='json', auth='user', methods=['POST'])
     def cancel_payment_request(self, terminal_id, order_id):
-        current_datetime = datetime.utcnow()
         _logger.info("cancel_payment_request called for order_id: %s", str(order_id))
-        two_minutes_ago = current_datetime - timeout_delta + timedelta(seconds=5)
-        current_payment_requests = http.request.env['neat.worldpay.payment.request'].search(
-            [('terminal_id', '=', terminal_id), ('order_id', '=', order_id), ('status', '=', 'pending'), ('start_date', '>=', two_minutes_ago)])
+        current_payment_requests, current_resent_requests = self._get_active_payment_requests(terminal_id, order_id)
         _logger.info("cancel payment_requests: %s", current_payment_requests)
-        current_resent_requests = http.request.env['neat.worldpay.payment.request'].search(
-            [('terminal_id', '=', terminal_id), ('status', 'like', 'resent_%'), ('status', 'not like', 'processed_%'), ('start_date', '>=', two_minutes_ago)])
-        _logger.info("cancel resent_requests: %s", current_payment_requests)
+        _logger.info("cancel resent_requests: %s", current_resent_requests)
         if len(current_payment_requests) == 0 and len(current_resent_requests) == 0:
             _logger.info("cancel_payment_request called for order_id: " + str(order_id) + " returning 404 because no requests found")
             return { 'status': 404 }
@@ -269,6 +273,17 @@ class PosWorldpayController(http.Controller):
             cpr.write({'status': 'cancelled'})
         _logger.info("cancel_payment_request called for order_id: " + str(order_id) + " returning 200")
         return { 'status': 200 }
+
+    @http.route('/pos_worldpay/has_active_payment_request', type='json', auth='user', methods=['POST'])
+    def has_active_payment_request(self, terminal_id, order_id):
+        current_payment_requests, current_resent_requests = self._get_active_payment_requests(terminal_id, order_id)
+        has_active_payment = len(current_payment_requests) > 0 or len(current_resent_requests) > 0
+        return {
+            'status': 200,
+            'data': {
+                'has_active_payment': has_active_payment,
+            }
+        }
 
     @http.route('/pos_worldpay/check_request', type='json', auth='user', methods=['POST'])
     def check_request(self, terminal_id, transaction_id):
