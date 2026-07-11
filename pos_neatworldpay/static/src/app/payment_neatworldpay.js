@@ -1,6 +1,7 @@
 /** @odoo-module */
 
 import { _t } from "@web/core/l10n/translation";
+import { AlertDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { PaymentInterface } from "@point_of_sale/app/payment/payment_interface";
 
 export class PaymentNeatWorldpay extends PaymentInterface {
@@ -303,18 +304,27 @@ export class PaymentNeatWorldpay extends PaymentInterface {
     */
     async send_payment_cancel() {
         try {
-            super.send_payment_cancel(...arguments);
-            console.log('cancel')
-            const line = this._get_payment_line();
             const data = this._terminal_pay_data();
-            const terminalId = data.PaymentMethod.neat_worldpay_terminal_device_code
-            const res = await this.env.services.orm.rpc('/pos_worldpay/cancel_payment_request', {
+            const terminalId = data.PaymentMethod.neat_worldpay_terminal_device_code;
+            const activePaymentResult = await this.env.services.orm.rpc('/pos_worldpay/has_active_payment_request', {
+                terminal_id: terminalId,
+                order_id: data.OrderID,
+            });
+            if (activePaymentResult && activePaymentResult.status === 200 && activePaymentResult.data && activePaymentResult.data.has_active_payment) {
+                this.env.services.dialog.add(AlertDialog, {
+                    title: _t('Active Terminal Payment'),
+                    body: _t('Please cancel the payment from the terminal before cancelling it in Odoo.'),
+                });
+                return false;
+            }
+            super.send_payment_cancel(...arguments);
+            await this.env.services.orm.rpc('/pos_worldpay/cancel_payment_request', {
                 terminal_id: terminalId,
                 order_id: data.OrderID,
             })
         }
         catch(e) {
-            //this.displayMessage(this, "Error", "Connection with server lost. Please wait while the server reconnects and try again.", "Ok", "btnOkCancel");
+            return false;
         }
         return true;
     }
