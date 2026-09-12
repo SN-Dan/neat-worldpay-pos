@@ -26,14 +26,16 @@ class PosPaymentMethod(models.Model):
         return super(PosPaymentMethod, self)._get_payment_terminal_selection() + [('neatworldpay', 'NEAT Worldpay Terminal')]
 
     @api.depends('neat_worldpay_terminal_master_pwd')
-    def _compute_device_code(self):
+    def _compute_neat_worldpay_terminal_device_code(self):
         for record in self:
             if record.id and not record.neat_worldpay_terminal_device_code:
                 record.neat_worldpay_terminal_device_code = f"{record.id:04d}"
+            elif not record.neat_worldpay_terminal_device_code:
+                record.neat_worldpay_terminal_device_code = False
 
     neat_worldpay_terminal_device_code = fields.Char(
         string="Device Code",
-        compute="_compute_device_code",
+        compute="_compute_neat_worldpay_terminal_device_code",
         store=True,
         readonly=True,
     )
