@@ -4,15 +4,15 @@
 # This module extends Odoo's payment framework.
 # Odoo is a trademark of Odoo S.A.
 {
-    'name': 'POS Worldpay',
-    'version': '1.0',
+    'name': 'PoS Terminal Payment Integration Worldpay',
+    'version': '1.2',
     'category': 'Point of Sale',
     'sequence': 6,
     'summary': 'Worldpay PoS Payment Terminal Official Integration',
     'description': 'Pay using Odoo and Worldpay - Any Place, Any Time',
     'website': 'https://www.sns-software.com',
-    'author': 'Neat Apps',
-    'maintainer': 'Neat Apps',
+    'author': 'SNS Software LTD',
+    'maintainer': 'SNS Software LTD',
     'data': [
         'security/ir.model.access.csv',
         'views/pos_payment_method_views.xml',

@@ -17,6 +17,7 @@ class NeatWorldpayPaymentRequest(models.Model):
     order_id = fields.Text('Order Id', required=True, readonly=False, store=True)
     user_id = fields.Integer('User Id', required=True, readonly=False, store=True)
     refunded_order_line_id = fields.Integer('Refunded Order Line Id', required=False, readonly=False, store=True)
+    is_document_payment = fields.Boolean('Quotation/Invoice Payment', default=False)
     start_date = fields.Datetime('Start Date', required=True, readonly=False, store=True)
     amount = fields.Integer('Amount', required=True, readonly=False, store=True, digits=(19, 0))
     refunded_amt = fields.Integer('Refunded', required=True, readonly=False, store=True, digits=(19, 0))

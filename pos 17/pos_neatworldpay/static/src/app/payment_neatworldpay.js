@@ -2,6 +2,7 @@
 
 import { _t } from "@web/core/l10n/translation";
 import { PaymentInterface } from "@point_of_sale/app/payment/payment_interface";
+import { ErrorPopup } from "@point_of_sale/app/errors/popups/error_popup";
 
 export class PaymentNeatWorldpay extends PaymentInterface {
     sleep(ms) {
@@ -91,7 +92,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
         // Event listeners for button clicks
         btn.addEventListener("click", function(e) {
             const deviceCode = document.getElementById('deviceCodeInput').value;
-            localStorage.setItem('neatworldpay_synced_device_code', deviceCode)
+            localStorage.setItem('neat_synced_device_code', deviceCode)
             closeModal();
             window.socket_connect(true)
         });
@@ -100,7 +101,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
         if(!window.desktop_ws || !initialConnect) {
             window.desktop_ws = new WebSocket(window.desktop_ws_url)
             window.desktop_ws.onopen = () => {
-                const syncedDeviceCode = localStorage.getItem("neatworldpay_synced_device_code")
+                const syncedDeviceCode = localStorage.getItem("neat_synced_device_code")
                 window.desktop_ws.send(JSON.stringify({ type: "register", deviceId: syncedDeviceCode + "-pc" }));
                 console.log("Connected and registered.");
             }
@@ -138,7 +139,9 @@ export class PaymentNeatWorldpay extends PaymentInterface {
     */
     setup() {
         super.setup(...arguments);
-        window.is_printing_allowed_desktop_ws_map = {}
+        if (!window.is_printing_allowed_desktop_ws_map) {
+            window.is_printing_allowed_desktop_ws_map = {}
+        }
         this.addCss()
         const device = window.navigator.userAgent
         const isMobile = device.includes("Android") || window.isNeatPOSAndroidApp
@@ -148,7 +151,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
             if(this.payment_method.neat_worldpay_ws_url) {
                 window.socket_connect = this.socket_connect.bind(this)
                 window.desktop_ws_url = this.payment_method.neat_worldpay_ws_url
-                if(localStorage.getItem("neatworldpay_synced_device_code")) {
+                if(localStorage.getItem("neat_synced_device_code")) {
                     this.socket_connect(true)
                 }
                 else {
@@ -224,7 +227,7 @@ export class PaymentNeatWorldpay extends PaymentInterface {
                     window.open("app://neat-worldpay-payment-android?paymentType=0&redirectUrl=" + encodedURL);
                 }
             }
-            else if(result && result.status === 201 && data.PaymentMethod.neat_worldpay_is_desktop_mode  && data.PaymentMethod.neat_worldpay_is_local_ws_server && data.PaymentMethod.neat_worldpay_ws_url && !isMobile && data.PaymentMethod.neat_worldpay_terminal_device_code === localStorage.getItem("neatworldpay_synced_device_code")) {
+            else if(result && result.status === 201 && data.PaymentMethod.neat_worldpay_is_desktop_mode  && data.PaymentMethod.neat_worldpay_is_local_ws_server && data.PaymentMethod.neat_worldpay_ws_url && !isMobile && data.PaymentMethod.neat_worldpay_terminal_device_code === localStorage.getItem("neat_synced_device_code")) {
                 window.desktop_ws.send(JSON.stringify({ type: "message", msgType: "payment" }));
             }
             line.set_payment_status('waitingCard');
@@ -300,18 +303,27 @@ export class PaymentNeatWorldpay extends PaymentInterface {
     */
     async send_payment_cancel() {
         try {
-            super.send_payment_cancel(...arguments);
-            console.log('cancel')
-            const line = this._get_payment_line();
             const data = this._terminal_pay_data();
-            const terminalId = data.PaymentMethod.neat_worldpay_terminal_device_code
-            const res = await this.env.services.rpc('/pos_worldpay/cancel_payment_request', {
+            const terminalId = data.PaymentMethod.neat_worldpay_terminal_device_code;
+            const activePaymentResult = await this.env.services.rpc('/pos_worldpay/has_active_payment_request', {
+                terminal_id: terminalId,
+                order_id: data.OrderID,
+            });
+            if (activePaymentResult && activePaymentResult.status === 200 && activePaymentResult.data && activePaymentResult.data.has_active_payment) {
+                this.env.services.popup.add(ErrorPopup, {
+                    title: _t('Active Terminal Payment'),
+                    body: _t('Please cancel the payment from the terminal before cancelling it in Odoo.'),
+                });
+                return false;
+            }
+            super.send_payment_cancel(...arguments);
+            await this.env.services.rpc('/pos_worldpay/cancel_payment_request', {
                 terminal_id: terminalId,
                 order_id: data.OrderID,
             })
         }
         catch(e) {
-            //this.displayMessage(this, "Error", "Connection with server lost. Please wait while the server reconnects and try again.", "Ok", "btnOkCancel");
+            return false;
         }
         return true;
     }

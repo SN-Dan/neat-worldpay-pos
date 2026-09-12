@@ -39,14 +39,24 @@ export class SNPrinterService extends PrinterService {
             );
             AndroidInterface.onBluetoothPrintReceipt(image)
         }
-        else if(window.desktop_ws && window.is_printing_allowed_desktop_ws_map && window.is_printing_allowed_desktop_ws_map[localStorage.getItem("neatworldpay_synced_device_code")]) {
+        else if(window.desktop_ws && window.is_printing_allowed_desktop_ws_map && window.is_printing_allowed_desktop_ws_map[localStorage.getItem("neat_synced_device_code")]) {
             const image = this.processCanvas(
                 await htmlToCanvas(el, { addClass: "pos-receipt-print" })
             );
-            window.desktop_ws.send(JSON.stringify({ type: "message", msgType: "print", msgPayload: image }));
+            if (window.desktop_ws_is_online && window.desktop_ws_send_print) {
+                await window.desktop_ws_send_print(image);
+            } else {
+                window.desktop_ws.send(JSON.stringify({ type: "message", msgType: "print", msgPayload: image }));
+            }
         }
         else {
-            this.setPrinter(this.hardware_proxy.printer);
+            try {
+                if (this.hardware_proxy?.printer) {
+                    this.setPrinter(this.hardware_proxy.printer);
+                }
+            } catch (e) {
+                console.error("Failed to set hardware printer", e);
+            }
             try {
                 return await super.printHtml(...arguments);
             } catch (error) {
@@ -56,8 +66,6 @@ export class SNPrinterService extends PrinterService {
     }
     async printHtmlAlternative(error, ...args) {
         console.error("Printing Error: using web printer instead.")
-        // We want to call the _printWeb when the popup is fully gone
-        // from the screen which happens after the next animation frame.
         await new Promise(requestAnimationFrame);
         return this.printWeb(...args);
     }
