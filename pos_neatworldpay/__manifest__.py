@@ -5,7 +5,7 @@
 # Odoo is a trademark of Odoo S.A.
 {
     'name': 'PoS Terminal Payment Integration Worldpay',
-    'version': '1.1',
+    'version': '1.2',
     'category': 'Point of Sale',
     'sequence': 6,
     'summary': 'Worldpay PoS Payment Terminal Official Integration',
