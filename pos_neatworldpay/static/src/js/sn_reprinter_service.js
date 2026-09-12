@@ -20,9 +20,13 @@ odoo.define('pos_neatworldpay.SNReprintReceiptScreen', function(require) {
                 const image = await this.getReceiptImage()
                 AndroidInterface.onBluetoothPrintReceipt(image);
             } 
-            else if(window.desktop_ws && window.is_printing_allowed_desktop_ws_map && window.is_printing_allowed_desktop_ws_map[localStorage.getItem("neatworldpay_synced_device_code")]) {
+            else if(window.desktop_ws && window.is_printing_allowed_desktop_ws_map && window.is_printing_allowed_desktop_ws_map[localStorage.getItem("neat_synced_device_code")]) {
                 const image = await this.getReceiptImage()
-                window.desktop_ws.send(JSON.stringify({ type: "message", msgType: "print", msgPayload: image }));
+                if (window.desktop_ws_is_online && window.desktop_ws_send_print) {
+                    await window.desktop_ws_send_print(image);
+                } else {
+                    window.desktop_ws.send(JSON.stringify({ type: "message", msgType: "print", msgPayload: image }));
+                }
             }
             else {
                 await super._printWeb();

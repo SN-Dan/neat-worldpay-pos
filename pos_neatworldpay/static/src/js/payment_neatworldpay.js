@@ -87,7 +87,7 @@ odoo.define('pos_neatworldpay.payment', function(require) {
         // Event listeners for button clicks
         btn.addEventListener("click", function(e) {
             const deviceCode = document.getElementById('deviceCodeInput').value;
-            localStorage.setItem('neatworldpay_synced_device_code', deviceCode)
+            localStorage.setItem('neat_synced_device_code', deviceCode)
             closeModal();
             socket_connect(true)
         });
@@ -113,7 +113,7 @@ odoo.define('pos_neatworldpay.payment', function(require) {
         if(!window.desktop_ws || !initialConnect) {
             window.desktop_ws = new WebSocket(window.desktop_ws_url)
             window.desktop_ws.onopen = () => {
-                const syncedDeviceCode = localStorage.getItem("neatworldpay_synced_device_code")
+                const syncedDeviceCode = localStorage.getItem("neat_synced_device_code")
                 window.desktop_ws.send(JSON.stringify({ type: "register", deviceId: syncedDeviceCode + "-pc" }));
                 console.log("Connected and registered.");
             }
@@ -151,7 +151,7 @@ odoo.define('pos_neatworldpay.payment', function(require) {
                 window.is_printing_allowed_desktop_ws_map[this.payment_method.neat_worldpay_terminal_device_code] = this.payment_method.neat_worldpay_is_terminal_printer_communication_allowed
                 if(this.payment_method.neat_worldpay_ws_url) {
                     window.desktop_ws_url = this.payment_method.neat_worldpay_ws_url
-                    if(localStorage.getItem("neatworldpay_synced_device_code")) {
+                    if(localStorage.getItem("neat_synced_device_code")) {
                         socket_connect(true)
                     }
                     else {
@@ -239,7 +239,7 @@ odoo.define('pos_neatworldpay.payment', function(require) {
                         window.open("app://neat-worldpay-payment-android?paymentType=0&redirectUrl=" + encodedURL);
                     }
                 }
-                else if(result && result.status === 201 && data.PaymentMethod.neat_worldpay_is_desktop_mode && data.PaymentMethod.neat_worldpay_is_local_ws_server && data.PaymentMethod.neat_worldpay_ws_url && !isMobile && data.PaymentMethod.neat_worldpay_terminal_device_code === localStorage.getItem("neatworldpay_synced_device_code")) {
+                else if(result && result.status === 201 && data.PaymentMethod.neat_worldpay_is_desktop_mode && data.PaymentMethod.neat_worldpay_is_local_ws_server && data.PaymentMethod.neat_worldpay_ws_url && !isMobile && data.PaymentMethod.neat_worldpay_terminal_device_code === localStorage.getItem("neat_synced_device_code")) {
                     window.desktop_ws.send(JSON.stringify({ type: "message", msgType: "payment" }));
                 }
                 line.set_payment_status('waitingCard');
