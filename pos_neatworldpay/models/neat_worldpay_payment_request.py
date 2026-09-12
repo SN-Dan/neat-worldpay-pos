@@ -13,17 +13,11 @@ class NeatWorldpayPaymentRequest(models.Model):
     _name = 'neat.worldpay.payment.request'
     _description = 'NEAT Worldpay Payment Request'
 
-    @api.model
-    def create(self, vals):
-        # Handle both single dict and list of dicts for Odoo 19 compatibility
-        if isinstance(vals, dict):
-            vals = [vals]
-        return super().create(vals)
-
     terminal_id = fields.Text('Terminal Id', required=True, readonly=False, store=True)
     order_id = fields.Text('Order Id', required=True, readonly=False, store=True)
     user_id = fields.Integer('User Id', required=True, readonly=False, store=True)
     refunded_order_line_id = fields.Integer('Refunded Order Line Id', required=False, readonly=False, store=True)
+    is_document_payment = fields.Boolean('Quotation/Invoice Payment', default=False)
     start_date = fields.Datetime('Start Date', required=True, readonly=False, store=True)
     amount = fields.Integer('Amount', required=True, readonly=False, store=True, digits=(19, 0))
     refunded_amt = fields.Integer('Refunded', required=True, readonly=False, store=True, digits=(19, 0))
