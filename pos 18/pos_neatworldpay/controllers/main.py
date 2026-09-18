@@ -735,6 +735,7 @@ class PosWorldpayController(http.Controller):
                 'name': pos_payment_method[0].name, 
                 'url': pos_payment_method[0].company_id.website,
                 'ws_url': pos_payment_method[0].neat_worldpay_ws_url,
+                'desktop_api_key': pos_payment_method[0].neat_worldpay_desktop_api_key or '',
                 'is_desktop_mode': pos_payment_method[0].neat_worldpay_is_desktop_mode,
                 'is_local_ws_server': pos_payment_method[0].neat_worldpay_is_local_ws_server,
                 'self_signed_certificates': pos_payment_method[0].neat_worldpay_self_signed_certificates

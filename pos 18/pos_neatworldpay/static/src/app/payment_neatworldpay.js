@@ -151,10 +151,13 @@ export class PaymentNeatWorldpay extends PaymentInterface {
         }
         if(pm && pm.neat_worldpay_is_desktop_mode && pm.neat_worldpay_is_local_ws_server && !isMobile){
             window.is_printing_allowed_desktop_ws_map[pm.neat_worldpay_terminal_device_code] = pm.neat_worldpay_is_terminal_printer_communication_allowed
-            if(pm.neat_worldpay_ws_url) {
+            var syncedDeviceCode = localStorage.getItem("neat_synced_device_code");
+            var pmDeviceCode = pm.neat_worldpay_terminal_device_code;
+            // Only wire/connect desktop WS for the payment method matching the synced terminal
+            if(pm.neat_worldpay_ws_url && (!syncedDeviceCode || syncedDeviceCode === pmDeviceCode)) {
                 window.socket_connect = this.socket_connect.bind(this)
                 window.desktop_ws_url = pm.neat_worldpay_ws_url
-                if(localStorage.getItem("neat_synced_device_code")) {
+                if(syncedDeviceCode === pmDeviceCode) {
                     this.socket_connect(true)
                 }
                 else {

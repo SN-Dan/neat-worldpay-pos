@@ -44,6 +44,10 @@ class PosPaymentMethod(models.Model):
     neat_worldpay_is_mobile = fields.Boolean(string='Use Mobile Redirect', help="Indicates if you will use Odoo on the mobile device that has the Neat POS Suite app so it can improve the user experience by redirecting to the app when needed.")
     neat_worldpay_self_signed_certificates = fields.Char('Self Signed Certificates', help='Self Signed Certificates that will be imported to the mobile app.')
     neat_worldpay_is_desktop_mode = fields.Boolean(string='Use Desktop Mode', help="Indicates if you will use Odoo on a desktop device with the desktop mode to trigger payments on the app, use the local server which also allows receipt printing and barcode scanning.")
+    neat_worldpay_desktop_api_key = fields.Char(
+        string='Activation Code',
+        help='Activation code for the terminal. Also used as the API key for the online desktop WebSocket relay.',
+    )
     neat_worldpay_is_local_ws_server = fields.Boolean(string='Use Local Mode', help="Uses a WS server hosted on your local network that allows you to use the built in barcode scanner and receipt printer.")
     neat_worldpay_ws_url = fields.Char('WS URL', help='The Websocket server url on your local network for Desktop Mode')
     neat_worldpay_is_terminal_printer_communication_allowed = fields.Boolean(string='Allow Terminal Printer Communication', help="Allows communication to the terminal's configured printer")
@@ -69,6 +73,8 @@ class PosPaymentMethod(models.Model):
 
     @api.model
     def create(self, values):
+        if values.get('neat_worldpay_desktop_api_key'):
+            self._validate_neat_worldpay_activation_code(values['neat_worldpay_desktop_api_key'])
         if values['use_payment_terminal'] == 'neatworldpay':
             if values['neat_worldpay_terminal_master_pwd_mock'] is False or values['neat_worldpay_terminal_master_pwd_mock'] == '' or len(
                 values['neat_worldpay_terminal_master_pwd_mock']) < 4 or len(
@@ -84,6 +90,11 @@ class PosPaymentMethod(models.Model):
     def write(self, values):
         if 'neat_worldpay_terminal_device_code' in values:
             del values['neat_worldpay_terminal_device_code']
+        if values.get('neat_worldpay_desktop_api_key'):
+            for rec in self:
+                if values['neat_worldpay_desktop_api_key'] != rec.neat_worldpay_desktop_api_key:
+                    self._validate_neat_worldpay_activation_code(values['neat_worldpay_desktop_api_key'])
+                    break
         if 'neat_worldpay_terminal_master_pwd_mock' in values:
             if values['neat_worldpay_terminal_master_pwd_mock'] is False or values[
                 'neat_worldpay_terminal_master_pwd_mock'] == '' or len(
@@ -96,6 +107,38 @@ class PosPaymentMethod(models.Model):
             del values['neat_worldpay_terminal_master_pwd_mock']
 
         return super(PosPaymentMethod, self).write(values)
+
+
+    def _validate_neat_worldpay_activation_code(self, activation_code):
+        """Validate activation code against Neat AcquirerLicense."""
+        website = self.env.company.website
+        if not website:
+            raise ValidationError(_("Please enter the website on your company website."))
+        try:
+            headers = {
+                "Referer": website,
+                "Authorization": activation_code,
+            }
+            response = requests.get(
+                "https://api.sns-software.com/api/AcquirerLicense/code?version=v1",
+                headers=headers,
+                timeout=10,
+            )
+            if response.status_code == 200:
+                return True
+            _logger.error(
+                "Failed to validate activation code: %s - %s",
+                response.status_code, response.text,
+            )
+        except requests.RequestException as exc:
+            _logger.error("Failed to validate activation code: %s", exc)
+        raise ValidationError(_("Invalid activation code."))
+
+    @api.constrains('use_payment_terminal', 'neat_worldpay_desktop_api_key')
+    def _check_neat_worldpay_desktop_api_key(self):
+        for rec in self:
+            if rec.use_payment_terminal == 'neatworldpay' and not rec.neat_worldpay_desktop_api_key:
+                raise ValidationError(_("Please enter an Activation Code."))
 
     def generate_password_uuid(self):
         return datetime.utcnow().strftime('%Y%m%d%H%M%S') + str(random.randint(1000, 9999))
