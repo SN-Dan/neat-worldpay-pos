@@ -17,10 +17,29 @@
                 <field name="neat_worldpay_is_mobile" invisible="use_payment_terminal != 'neatworldpay'"/>
                 <field name="neat_worldpay_self_signed_certificates" invisible="use_payment_terminal != 'neatworldpay'"/>
                 <field name="neat_worldpay_is_desktop_mode" invisible="use_payment_terminal != 'neatworldpay'"/>
+<div class="alert alert-success" role="alert" colspan="2"
+                     invisible="use_payment_terminal != 'neatworldpay' or neat_worldpay_desktop_api_key">
+                    Don't have an Activation Code yet?<br/>
+                    
+                    <a href="https://api.sns-software.com/license-request?provider=worldpay" target="_blank" rel="noopener noreferrer">
+                        Get a free activation code
+                    </a>
+                </div>
+                <field name="neat_worldpay_desktop_api_key" password="True"
+                       invisible="use_payment_terminal != 'neatworldpay'"
+                       required="use_payment_terminal == 'neatworldpay'"/>
                 <field name="neat_worldpay_is_local_ws_server" invisible="use_payment_terminal != 'neatworldpay'" readonly="neat_worldpay_is_desktop_mode != True" />
                 <field name="neat_worldpay_ws_url" invisible="use_payment_terminal != 'neatworldpay'" readonly="neat_worldpay_is_local_ws_server != True or neat_worldpay_is_desktop_mode != True"/>
-                <field name="neat_worldpay_is_terminal_printer_communication_allowed" invisible="use_payment_terminal != 'neatworldpay'" readonly="neat_worldpay_is_local_ws_server != True or neat_worldpay_is_desktop_mode != True"/>
-            </xpath>
+                <field name="neat_worldpay_is_terminal_printer_communication_allowed" invisible="use_payment_terminal != 'neatworldpay'" readonly="neat_worldpay_is_desktop_mode != True"/>
+                <div class="alert alert-success" role="alert" colspan="2"
+                     invisible="use_payment_terminal != 'neatworldpay'">
+                    <b>By using this module you agree to our </b>
+                    
+                    <a href="https://api.sns-software.com/terms?provider=worldpay" target="_blank" rel="noopener noreferrer">
+                        terms and conditions
+                    </a>
+                </div>
+                    </xpath>
         </field>
     </record>
 </odoo>
