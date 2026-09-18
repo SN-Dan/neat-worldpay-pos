@@ -18,6 +18,19 @@
                 <field name="neat_worldpay_is_mobile" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')]}"/>
                 <field name="neat_worldpay_self_signed_certificates" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')]}"/>
                 <field name="neat_worldpay_is_desktop_mode" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')]}"/>
+<div class="alert alert-success" role="alert" colspan="2"
+                     attrs="{'invisible': ['|', ('use_payment_terminal', '!=', 'neatworldpay'), ('neat_worldpay_desktop_api_key', '!=', False)]}">
+                    Don't have an Activation Code yet?<br/>
+                    
+                    <a href="https://api.sns-software.com/license-request?provider=worldpay" target="_blank" rel="noopener noreferrer">
+                        Get a free activation code
+                    </a>
+                </div>
+                <field name="neat_worldpay_desktop_api_key" password="True"
+                    attrs="{
+                        'invisible': [('use_payment_terminal', '!=', 'neatworldpay')],
+                        'required': [('use_payment_terminal', '=', 'neatworldpay')]
+                    }"/>
                 <field name="neat_worldpay_is_local_ws_server" attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')], 'readonly': [('neat_worldpay_is_desktop_mode', '!=', True)]}"/>
                 <field name="neat_worldpay_is_readonly" invisible="1"/>
                 <field name="neat_worldpay_ws_url"
@@ -25,13 +38,20 @@
                         'invisible': [('use_payment_terminal', '!=', 'neatworldpay')],
                         'readonly': [('neat_worldpay_is_readonly', '=', True)]
                     }"/>
-                    
                 <field name="neat_worldpay_is_terminal_printer_communication_allowed"
                     attrs="{
                         'invisible': [('use_payment_terminal', '!=', 'neatworldpay')],
-                        'readonly': [('neat_worldpay_is_readonly', '=', True)]
+                        'readonly': [('neat_worldpay_is_desktop_mode', '!=', True)]
                     }"/>
-            </xpath>
+                <div class="alert alert-success" role="alert" colspan="2"
+                     attrs="{'invisible': [('use_payment_terminal', '!=', 'neatworldpay')]}">
+                    <b>By using this module you agree to our </b>
+                    
+                    <a href="https://api.sns-software.com/terms?provider=worldpay" target="_blank" rel="noopener noreferrer">
+                        terms and conditions
+                    </a>
+                </div>
+                    </xpath>
         </field>
     </record>
 </odoo>
